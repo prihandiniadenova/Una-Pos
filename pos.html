@@ -1,792 +1,143 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNA POS - Kasir</title>
+    <title>Kasir (POS) - UNA POS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
-        * { box-sizing: border-box; }
-        body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: #F6F1E9; color: #3D2B00; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .animate-pop { animation: pop 0.25s cubic-bezier(0.34,1.56,0.64,1); }
-        @keyframes pop { 0%{transform:scale(0.88);opacity:0} 100%{transform:scale(1);opacity:1} }
-        :root { --yellow:#FFD93D; --orange:#FF9A00; --bg:#F6F1E9; --card:#FFFDF8; --dark:#1C1A16; }
-
-        /* Product card */
-        .product-card { background: #FFFDF8; border: 1.5px solid rgba(255,154,0,0.15); border-radius: 1.25rem;
-            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; overflow: hidden; }
-        .product-card:hover { transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 32px rgba(255,154,0,0.2); border-color: #FF9A00; }
-        .product-card:active { transform: scale(0.97); }
-
-        /* Inputs */
-        .una-input { background:#FFF8EE; border:1.5px solid rgba(255,211,61,0.4); border-radius:0.875rem;
-            padding:0.75rem 1rem; outline:none; transition:all 0.2s; color:#3D2B00; width:100%; }
-        .una-input:focus { border-color:#FF9A00; box-shadow:0 0 0 3px rgba(255,154,0,0.15); background:#FFFDF8; }
-
-        /* Buttons */
-        .btn-pay { background:linear-gradient(135deg,#FF9A00,#FFD93D); color:#3D2B00; font-weight:900;
-            transition:all 0.2s; box-shadow:0 4px 18px rgba(255,154,0,0.45); border:none; cursor:pointer; }
-        .btn-pay:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,154,0,0.55); }
-        .btn-pay:disabled { background:#E8E0D4; color:#B5A898; box-shadow:none; cursor:not-allowed; }
-        .btn-pay:active:not(:disabled) { transform:scale(0.98); }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width:4px; }
-        ::-webkit-scrollbar-track { background:transparent; }
-        ::-webkit-scrollbar-thumb { background:#FFD93D44; border-radius:99px; }
+        .pos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+        }
     </style>
 </head>
-<body style="background:#F6F1E9; color:#3D2B00; overflow:hidden;">
 
+<body class="overflow-hidden" style="background:#F6F1E9; color:#3D2B00;">
     <div class="flex h-screen w-full">
-        <!-- Main POS Area -->
-        <main class="flex-1 flex flex-col min-w-0 relative" style="background:#F6F1E9;">
-            
-            <!-- Header -->
-            <header class="px-6 py-4 flex justify-between items-center sticky top-0 z-20" style="background:#FFFDF8; border-bottom:1.5px solid rgba(255,154,0,0.15); box-shadow:0 2px 16px rgba(255,154,0,0.08);">
-                <div class="flex items-center gap-4">
-                    <a href="index.html" class="p-2 rounded-xl transition-all group" style="background:#FFF0D0; color:#FF9A00;" title="Kembali ke Management">
-                        <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
-                    </a>
-                    <div class="flex items-center gap-2.5">
-                        <div class="p-2 rounded-xl" style="background:linear-gradient(135deg,#FF9A00,#FFD93D);">
-                            <i data-lucide="shopping-bag" class="w-4 h-4" style="color:#3D2B00;"></i>
+        <!-- Sidebar removed for POS focus -->
+
+        <main class="flex-1 flex overflow-hidden">
+            <!-- Left: Products -->
+            <div class="flex-1 flex flex-col h-full overflow-hidden border-r border-gray-200/50">
+                <div class="p-6 pb-2">
+                    <div class="mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <a href="index.html" class="p-3 bg-white rounded-2xl shadow-sm hover:bg-orange-50 transition-all text-orange-900"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                        <div class="relative w-72">
+                            <i data-lucide="search"
+                                class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="pos-search" placeholder="Cari Produk atau SKU..."
+                                class="una-input w-full pl-12 h-12 text-sm shadow-sm">
                         </div>
-                        <h1 class="font-black text-lg tracking-tight" style="color:#1C1A16;">UNA <span style="color:#FF9A00;">POS</span></h1>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div id="active-user-badge" class="flex items-center gap-3 px-4 py-2 rounded-2xl" style="background:#FFF4DC; border:1.5px solid rgba(255,211,61,0.4);">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black" id="cashier-initial" style="background:#FF9A00;">A</div>
-                        <div>
-                            <p class="text-[9px] font-bold uppercase tracking-widest leading-none mb-0.5" style="color:#C06800;">Petugas Aktif</p>
-                            <select id="active-cashier-select" class="bg-transparent border-none text-xs font-black outline-none p-0 cursor-pointer block transition-colors" style="color:#7A4F01;">
-                                <!-- Injected -->
+                        <div class="flex items-center gap-3 overflow-hidden" id="pos-category-container">
+                            <div class="flex gap-1.5" id="pos-cat-chips"></div>
+                            <div class="h-6 w-px bg-gray-200 mx-1"></div>
+                            <select id="pos-cat-select" class="una-input h-10 text-xs px-4 pr-10 shadow-sm border-0 min-w-[140px]" onchange="setPOSCategory(this.value)">
+                                <option value="Semua">Lainnya...</option>
                             </select>
                         </div>
                     </div>
-                    <button onclick="openCloseCashierModal()" class="px-4 py-2 rounded-2xl text-[10px] font-black transition-all uppercase tracking-widest flex items-center gap-2" style="background:#FFF0F0; color:#E53E3E; border:1.5px solid #FED7D7;" onmouseover="this.style.background='#E53E3E';this.style.color='white';" onmouseout="this.style.background='#FFF0F0';this.style.color='#E53E3E';">
-                        <i data-lucide="power" class="w-4 h-4"></i> Tutup Kasir
-                    </button>
-                </div>
-            </header>
-
-            <!-- Toast Notification -->
-            <div id="notification" class="fixed top-6 right-6 z-[99] transform translate-x-full opacity-0 transition-all duration-300 pointer-events-none">
-                <div class="px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3" style="background:#1C1A16; border:1px solid rgba(255,211,61,0.3);">
-                    <div id="notif-icon" style="color:#FFD93D;"></div>
-                    <span id="notif-message" class="font-semibold text-sm tracking-wide" style="color:#FFF8EE;">Success message here</span>
                 </div>
             </div>
+            <div class="flex-1 overflow-y-auto px-6 pb-20">
+                <div id="pos-grid" class="pos-grid"></div>
+            </div>
+        </div>
 
-            <!-- POS Interface -->
-            <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
-                <!-- Products Grid -->
-                <div class="flex-1 flex flex-col p-5 overflow-hidden">
-                    <div class="flex flex-col md:flex-row gap-3 mb-5">
-                        <div class="relative flex-1">
-                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style="color:#C06800;"></i>
-                            <input type="text" id="pos-search" placeholder="Cari nama produk atau SKU..." 
-                                class="una-input pl-11">
+            <!-- Right: Cart -->
+            <div class="w-96 flex flex-col h-full bg-white shadow-2xl relative z-10">
+                <div class="p-6 border-b border-gray-50 bg-[#FFFDF8]">
+                    <h3 class="font-black text-lg flex items-center gap-2 " style="color:#1C1A16;"><i
+                            data-lucide="shopping-cart" class="w-5 h-5 text-orange-500"></i> Keranjang</h3>
+                    <div class="mt-4">
+                        <div class="relative">
+                            <i data-lucide="users"
+                                class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-300"></i>
+                            <input type="text" list="member-list" id="member-search-input" onchange="selectMember()"
+                                placeholder="Cari Member..." class="una-input w-full pl-9 h-10 text-xs">
+                            <datalist id="member-list"></datalist>
                         </div>
-                        <div class="flex gap-2">
-                            <input list="categories-list" id="pos-category" placeholder="Semua Kategori" 
-                                class="una-input cursor-text" style="width:180px;">
-                            <datalist id="categories-list">
-                                <option value="Semua">Semua Kategori</option>
-                            </datalist>
+                        <div id="selected-member-badge"
+                            class="hidden mt-2 inline-block px-3 py-1 rounded-full bg-orange-100 text-[#A05C00] text-[10px] font-black uppercase tracking-widest border border-orange-200 animate-pop">
                         </div>
-                    </div>
-
-                    <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 overflow-y-auto pr-2 scrollbar-hide pb-20">
-                        <!-- Product cards injected here -->
                     </div>
                 </div>
 
-                <!-- Checkout Panel -->
-                <div class="w-full lg:w-[390px] flex flex-col z-10" style="background:#FFFDF8; border-left:1.5px solid rgba(255,154,0,0.15); box-shadow:-4px 0 24px rgba(255,154,0,0.07);">
-                    <div class="px-6 py-5 flex justify-between items-center" style="border-bottom:1.5px solid rgba(255,154,0,0.1);">
-                        <h2 class="text-base font-black flex items-center gap-2" style="color:#3D2B00;">
-                            <i data-lucide="shopping-cart" class="w-5 h-5" style="color:#FF9A00;"></i> Detail Pesanan
-                        </h2>
-                        <button onclick="clearCart()" class="text-xs font-black uppercase tracking-widest transition-colors" style="color:#E53E3E;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Reset</button>
+                <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-3"></div>
+
+                <div class="p-6 bg-white border-t space-y-4 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+                    <div class="flex justify-between items-center text-xs font-bold text-gray-400">
+                        <span>Subtotal</span>
+                        <span id="cart-subtotal">Rp 0</span>
                     </div>
-                    
-                    <!-- Customer Selection -->
-                    <div class="p-4" style="border-bottom:1px solid rgba(255,154,0,0.1); background:#FFF8EE;">
-                        <div class="flex p-1 rounded-xl mb-3" style="background:rgba(255,154,0,0.08); border:1px solid rgba(255,154,0,0.15);">
-                            <button onclick="setCustomerType('umum')" id="type-umum" class="flex-1 py-2 text-[10px] font-black rounded-lg transition-all" style="background:#FF9A00; color:#FFFDF8;">UMUM</button>
-                            <button onclick="setCustomerType('member')" id="type-member" class="flex-1 py-2 text-[10px] font-black rounded-lg transition-all" style="color:#A05C00;">MEMBER</button>
-                        </div>
-
-                        <div id="member-selector" class="hidden animate-pop">
-                            <input list="members-list" id="member-dropdown" placeholder="-- Pilih/Ketik Member --" class="una-input text-sm">
-                            <datalist id="members-list"></datalist>
-                            <div id="selected-member-badge" class="hidden mt-2 p-3 rounded-xl flex items-center gap-3" style="background:#FFF4DC; border:1px solid rgba(255,211,61,0.4);">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs" id="member-initial" style="background:#FFD93D; color:#7A4F01;">?</div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-black truncate" id="member-name-display" style="color:#3D2B00;"></p>
-                                    <p class="text-[10px] font-medium" style="color:#C06800;">Diskon Member 10% Aktif</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="umum-info" class="text-center py-1.5">
-                            <p class="text-[10px] italic" style="color:#A05C00;">Transaksi tanpa kartu member</p>
-                        </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-black uppercase tracking-widest" style="color:#1C1A16;">Total
+                            Pembayaran</span>
+                        <span id="cart-total" class="text-2xl font-black text-orange-500">Rp 0</span>
                     </div>
-
-                    <!-- Active Cashier Section Removed -->
-
-                    <!-- Cart Items -->
-                    <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide"></div>
-
-                    <!-- Summary -->
-                    <div class="p-6" style="border-top:1.5px solid rgba(255,154,0,0.12); background:#FFFDF8; box-shadow:0 -8px 24px rgba(255,154,0,0.06);">
-                        <div class="mb-4">
-                            <label class="block text-[10px] font-black mb-1.5 uppercase tracking-widest" style="color:#A05C00;">Voucher / Diskon (Rp)</label>
-                            <input type="number" id="voucher-input" placeholder="0" class="una-input text-sm font-black">
-                        </div>
-                        <div class="space-y-2 mb-4">
-                            <div class="flex justify-between text-xs font-bold" style="color:#A05C00;">
-                                <span>Subtotal</span>
-                                <span id="cart-subtotal" style="color:#3D2B00;">Rp 0</span>
-                            </div>
-                            <div id="discount-row" class="hidden flex justify-between text-xs font-bold" style="color:#16A34A;">
-                                <span>Disc. Member (10%)</span>
-                                <span id="cart-discount">-Rp 0</span>
-                            </div>
-                            <div id="voucher-row" class="hidden flex justify-between text-xs font-bold" style="color:#C06800;">
-                                <span>Voucher Potongan</span>
-                                <span id="cart-voucher">-Rp 0</span>
-                            </div>
-                            <div class="flex justify-between text-xs font-bold" style="color:#A05C00;">
-                                <span>Pajak (11%)</span>
-                                <span id="cart-tax" style="color:#3D2B00;">Rp 0</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between text-2xl font-black pt-4 mb-5" style="border-top:2px dashed rgba(255,154,0,0.2); color:#1C1A16;">
-                            <span>TOTAL</span>
-                            <span id="cart-total" style="color:#FF9A00;">Rp 0</span>
-                        </div>
-                        <button onclick="openPaymentModal()" id="btn-checkout" disabled class="btn-pay w-full py-5 rounded-2xl flex items-center justify-center gap-3 uppercase tracking-widest text-sm shadow-xl">
-                            <i data-lucide="credit-card" class="w-5 h-5"></i> Bayar Sekarang
-                        </button>
-                    </div>
+                    <button onclick="checkout()"
+                        class="btn-primary w-full py-4 rounded-2xl font-black text-lg shadow-xl shadow-orange-500/20 active:scale-95 transition-all">Bayar
+                        Sekarang (F8)</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Payment Modal -->
-    <div id="payment-modal" class="fixed inset-0 z-[70] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="payment-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-xl font-black flex items-center gap-3" style="color:#1C1A16;">
-                    <span class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:#FF9A00;"><i data-lucide="wallet" class="w-5 h-5 text-white"></i></span> Tagihan
-                </h2>
-                <button onclick="closePaymentModal()" class="w-10 h-10 rounded-2xl flex items-center justify-center transition-all" style="background:#FFF0D0; color:#FF9A00;">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="text-center mb-8 py-8 rounded-3xl" style="background:#FFF4DC; border:1.5px solid rgba(255,154,0,0.15);">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style="color:#A05C00;">Total Tagihan Final</p>
-                <h3 id="payment-total-display" class="text-4xl font-black tracking-tighter" style="color:#1C1A16;">Rp 0</h3>
-            </div>
-            <div class="grid grid-cols-1 gap-3">
-                <button onclick="processPayment('Tunai')" class="py-5 rounded-2xl font-black transition-all flex items-center justify-between px-6 group" style="background:white; border:1.5px solid rgba(255,154,0,0.15); color:#3D2B00;" onmouseover="this.style.borderColor='#FF9A00';this.style.background='#FFFDF8';" onmouseout="this.style.borderColor='rgba(255,154,0,0.15)';this.style.background='white';">
-                    <div class="flex items-center gap-4">
-                        <i data-lucide="banknote" class="w-6 h-6" style="color:#16A34A;"></i> <span class="tracking-widest">TUNAI</span>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-4 h-4 opacity-30 group-hover:opacity-100 transition-all"></i>
-                </button>
-                <button onclick="processPayment('QRIS')" class="py-5 rounded-2xl font-black transition-all flex items-center justify-between px-6 group" style="background:white; border:1.5px solid rgba(255,154,0,0.15); color:#3D2B00;" onmouseover="this.style.borderColor='#FF9A00';this.style.background='#FFFDF8';" onmouseout="this.style.borderColor='rgba(255,154,0,0.15)';this.style.background='white';">
-                    <div class="flex items-center gap-4">
-                        <i data-lucide="qr-code" class="w-6 h-6" style="color:#FF9A00;"></i> <span class="tracking-widest">QRIS</span>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-4 h-4 opacity-30 group-hover:opacity-100 transition-all"></i>
-                </button>
-                <button onclick="processPayment('Debit')" class="py-5 rounded-2xl font-black transition-all flex items-center justify-between px-6 group" style="background:white; border:1.5px solid rgba(255,154,0,0.15); color:#3D2B00;" onmouseover="this.style.borderColor='#FF9A00';this.style.background='#FFFDF8';" onmouseout="this.style.borderColor='rgba(255,154,0,0.15)';this.style.background='white';">
-                    <div class="flex items-center gap-4">
-                        <i data-lucide="credit-card" class="w-6 h-6" style="color:#A05C00;"></i> <span class="tracking-widest">DEBIT / KARTU</span>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-4 h-4 opacity-30 group-hover:opacity-100 transition-all"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-    <!-- Modal Saldo Awal -->
-    <div id="opening-balance-modal" class="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 hidden">
-        <div class="rounded-[2.5rem] w-full max-w-sm p-10 shadow-2xl animate-pop text-center" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
-            <div class="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl" style="background:#FFF0D0; color:#FF9A00;">
-                <i data-lucide="wallet" class="w-10 h-10"></i>
-            </div>
-            <h2 class="text-2xl font-black mb-2 tracking-tight" style="color:#1C1A16;">Modal Awal Kasir</h2>
-            <p class="text-sm mb-8 leading-relaxed" style="color:#A05C00;">Masukkan jumlah uang tunai yang tersedia di laci saat ini.</p>
-            
-            <div class="space-y-4">
-                <div class="relative">
-                    <span class="absolute left-6 top-1/2 -translate-y-1/2 font-black" style="color:#FF9A00;">Rp</span>
-                    <input type="number" id="opening-balance-input" placeholder="0" 
-                        class="una-input w-full pl-16 pr-6 py-5 text-2xl font-black text-center"
-                        onkeypress="if(event.key === 'Enter') saveOpeningBalance()">
-                </div>
-                <button onclick="saveOpeningBalance()" class="btn-pay w-full py-5 rounded-2xl flex items-center justify-center gap-3 mt-4">
-                    <i data-lucide="play" class="w-5 h-5 fill-current"></i> Mulai Bertugas
-                </button>
-            </div>
-        </div>
-    </div>
-    <!-- Modal Tutup Kasir -->
-    <div id="close-cashier-modal" class="fixed inset-0 z-[110] bg-black/70 backdrop-blur-xl hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="rounded-[2.5rem] w-full max-w-lg p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="close-cashier-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-black flex items-center gap-3" style="color:#1C1A16;">
-                    <span class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:#FFF0D0;"><i data-lucide="log-out" class="w-6 h-6" style="color:#FF9A00;"></i></span> Laporan Tutup Kasir
-                </h2>
-                <button onclick="closeCloseCashierModal()" class="w-10 h-10 rounded-2xl flex items-center justify-center transition-all" style="background:#FFF0D0; color:#FF9A00;">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-8">
-                <div class="p-5 rounded-3xl" style="background:#F6F1E9; border:1px solid rgba(255,154,0,0.1);">
-                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:#A05C00;">Modal Awal</p>
-                    <p id="close-opening-balance" class="text-lg font-black" style="color:#1C1A16;">Rp 0</p>
-                </div>
-                <div class="p-5 rounded-3xl" style="background:#FFF4DC; border:1px solid rgba(255,154,0,0.15);">
-                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:#FF9A00;">Total Penjualan</p>
-                    <p id="close-total-sales" class="text-lg font-black" style="color:#1C1A16;">Rp 0</p>
-                </div>
-            </div>
-
-            <div class="space-y-4 mb-8">
-                <div class="flex justify-between items-center py-3 border-b border-orange-100/50">
-                    <span class="text-sm font-bold" style="color:#A05C00;">Total Tunai (Laci)</span>
-                    <span id="close-cash-expected" class="font-black" style="color:#1C1A16;">Rp 0</span>
-                </div>
-                <div class="flex justify-between items-center py-3 border-b border-orange-100/50">
-                    <span class="text-sm font-medium" style="color:#C06800;">Non-Tunai (QRIS/Debit)</span>
-                    <span id="close-non-cash" class="font-bold" style="color:#3D2B00;">Rp 0</span>
-                </div>
-                <div class="pt-4">
-                    <label class="block text-[10px] font-black uppercase tracking-widest mb-2" style="color:#A05C00;">Uang Fisik Di Laci (Hitung Manual)</label>
-                    <input type="number" id="close-cash-actual" placeholder="0" oninput="calculateClosingDiff()" 
-                        class="una-input w-full py-5 text-xl font-black text-center">
-                </div>
-                <div id="closing-diff-row" class="hidden flex justify-between items-center p-5 rounded-2xl" style="background:#FFF0D0; border:1px solid rgba(255,154,0,0.2);">
-                    <span class="text-xs font-bold" style="color:#A05C00;">Selisih / Kurang</span>
-                    <span id="closing-diff-val" class="font-black text-red-600">-Rp 0</span>
-                </div>
-            </div>
-
-            <button onclick="finishShift()" class="btn-pay w-full py-5 rounded-3xl flex items-center justify-center gap-3 group">
-                <i data-lucide="check-circle" class="w-6 h-6 transition-transform group-hover:scale-110"></i> Selesaikan & Tutup Kasir
-            </button>
-        </div>
-    </div>
+    <script src="js/app.js"></script>
+    <script src="js/pos.js"></script>
     <script>
-        const CATEGORIES = ['Pakaian', 'Gamis', 'Dress', 'Atasan', 'Mukenah', 'Tas', 'Sandal', 'Sepatu', 'Make Up', 'Bedak', 'Foundation', 'Sunscreen', 'Lipstick', 'Moisturizer'];
-        
-        let state = {
-            categories: [...CATEGORIES],
-            products: [],
-            cart: [],
-            customerType: 'umum',
-            selectedMember: null,
-            members: [],
-            transactions: [],
-            cashiers: [{ id: 'admin', name: 'Super Admin', pass: 'admin' }],
-            revenue: 0,
-            openingBalance: 0,
-            lastOpeningDate: null,
-            shiftLogs: []
-        };
-
-        function formatIDR(num) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
-        }
-
-        function loadState() {
-            let saved = localStorage.getItem('una_pos_state') || localStorage.getItem('lumiere_pos_state');
-            if (saved) {
-                state = JSON.parse(saved);
-                return true;
-            }
-            return false;
-        }
-
-        function saveState() {
-            localStorage.setItem('una_pos_state', JSON.stringify(state));
-        }
-
-        let notificationTimeout;
-        function showNotification(message, type = 'success') {
-            const notif = document.getElementById('notification');
-            const msgEl = document.getElementById('notif-message');
-            const iconEl = document.getElementById('notif-icon');
-            msgEl.innerText = message;
-            iconEl.innerHTML = type === 'success' ? '<i data-lucide="check-circle-2"></i>' : '<i data-lucide="alert-circle"></i>';
-            iconEl.className = type === 'success' ? 'text-green-400' : 'text-red-400';
-            lucide.createIcons();
-            notif.classList.remove('translate-x-full', 'opacity-0');
-            notif.classList.add('translate-x-0', 'opacity-100');
-            if (notificationTimeout) clearTimeout(notificationTimeout);
-            notificationTimeout = setTimeout(() => {
-                notif.classList.remove('translate-x-0', 'opacity-100');
-                notif.classList.add('translate-x-full', 'opacity-0');
-            }, 3000);
-        }
-
-        function renderPOS() {
-            const container = document.getElementById('product-grid');
-            const searchTerm = document.getElementById('pos-search').value.toLowerCase();
-            const categoryFilter = document.getElementById('pos-category').value;
-            container.innerHTML = '';
-            
-            const filtered = state.products.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(searchTerm) || p.sku.toLowerCase().includes(searchTerm);
-                const matchesCat = !categoryFilter || categoryFilter === 'Semua' || p.category.toLowerCase().includes(categoryFilter.toLowerCase());
-                return matchesSearch && matchesCat;
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-20 text-center" style="color:#C06800;">
-                        <i data-lucide="package-search" class="w-16 h-16 mx-auto mb-4 opacity-20"></i>
-                        <p class="font-bold">Produk tidak ditemukan</p>
-                    </div>`;
-                lucide.createIcons();
-                return;
-            }
-
-            filtered.slice(0, 50).forEach(product => {
-                const discount = product.discount || 0;
-                const finalPrice = discount > 0 ? product.price * (1 - discount/100) : product.price;
-                const tagHTML = discount > 0 ? `<div class="absolute top-2 left-2 text-white text-[9px] font-black px-2 py-1 rounded-lg" style="background:#FF9A00;">-${discount}%</div>` : '';
-                const stripHTML = discount > 0 ? `<span class="line-through text-[9px] font-medium" style="color:#A05C00;">${formatIDR(product.price)}</span>` : '';
-
-                const card = document.createElement('div');
-                card.className = "product-card p-4 animate-pop relative h-full flex flex-col";
-                card.onclick = () => addToCart(product);
-                card.innerHTML = `
-                    <div class="h-32 bg-gray-50/50 rounded-2xl mb-3 flex items-center justify-center text-gray-200 relative overflow-hidden">
-                        <i data-lucide="box" class="w-10 h-10 opacity-10"></i>
-                        ${tagHTML}
-                    </div>
-                    <div class="flex-1">
-                        <span class="text-[9px] font-black uppercase tracking-widest" style="color:#C06800;">${product.category}</span>
-                        <h3 class="font-black text-xs mt-0.5 leading-snug" style="color:#1C1A16;">${product.name}</h3>
-                    </div>
-                    <div class="mt-3">
-                        <div class="flex flex-col mb-1.5">
-                            ${stripHTML}
-                            <span class="font-black text-base" style="color:#FF9A00;">${formatIDR(finalPrice)}</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <div class="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full" style="width:${Math.min(product.stock, 100)}%; background:${product.stock < 10 ? '#EF4444' : '#FF9A00'};"></div>
-                            </div>
-                            <span class="text-[9px] font-black italic whitespace-nowrap" style="color:${product.stock < 10 ? '#EF4444' : '#A05C00'};">
-                                Sisa ${product.stock}
-                            </span>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            lucide.createIcons();
-        }
-
-        function addToCart(product) {
-            if (product.stock <= 0) return showNotification('Stok Habis!', 'error');
-            const existing = state.cart.find(item => item.id === product.id);
-            if (existing) {
-                if (existing.quantity >= product.stock) return showNotification('Stok Maksimal!', 'error');
-                existing.quantity++;
-            } else {
-                state.cart.push({ ...product, quantity: 1 });
-            }
-            updateCartUI();
-        }
-
-        function updateCartQuantity(id, delta) {
-            const item = state.cart.find(i => i.id === id);
-            const product = state.products.find(p => p.id === id);
-            if (item) {
-                const newQty = item.quantity + delta;
-                if (newQty > product.stock) return showNotification('Melebihi Stok!', 'error');
-                if (newQty > 0) item.quantity = newQty;
-                else state.cart = state.cart.filter(i => i.id !== id);
-            }
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const container = document.getElementById('cart-items');
-            container.innerHTML = '';
-            if (state.cart.length === 0) {
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-10 opacity-20" style="color:#C06800;">
-                    <i data-lucide="shopping-bag" class="w-16 h-16 mb-4"></i>
-                    <p class="text-xs font-black uppercase tracking-widest">Belum ada pesanan</p>
-                </div>`;
-            } else {
-                state.cart.forEach(item => {
-                    const discount = item.discount || 0;
-                    const finalPrice = discount > 0 ? item.price * (1 - discount/100) : item.price;
-                    const el = document.createElement('div');
-                    el.className = "flex gap-3 p-3 rounded-2xl transition-all animate-pop";
-                    el.style.background = "#FFF8EE";
-                    el.style.border = "1px solid rgba(255,154,0,0.1)";
-                    el.innerHTML = `
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-xs font-black truncate" style="color:#1C1A16;">${item.name}</h4>
-                            <p class="text-[10px] font-black" style="color:#FF9A00;">${formatIDR(finalPrice)}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="updateCartQuantity(${item.id}, -1)" class="w-7 h-7 flex items-center justify-center rounded-lg transition-all" style="background:white; border:1px solid rgba(255,154,0,0.2); color:#A05C00; shadow:sm;" onmouseover="this.style.background='#FFF0D0'" onmouseout="this.style.background='white'"><i data-lucide="minus" class="w-3 h-3"></i></button>
-                            <span class="text-xs font-black w-5 text-center" style="color:#1C1A16;">${item.quantity}</span>
-                            <button onclick="updateCartQuantity(${item.id}, 1)" class="w-7 h-7 flex items-center justify-center rounded-lg transition-all" style="background:white; border:1px solid rgba(255,154,0,0.2); color:#A05C00; shadow:sm;" onmouseover="this.style.background='#FFF0D0'" onmouseout="this.style.background='white'"><i data-lucide="plus" class="w-3 h-3"></i></button>
-                        </div>`;
-                    container.appendChild(el);
-                });
-            }
-            calculateTotals();
-            lucide.createIcons();
-        }
-
-        function calculateTotals() {
-            const subtotal = state.cart.reduce((sum, i) => {
-                const d = i.discount || 0;
-                return sum + ((d > 0 ? i.price * (1 - d/100) : i.price) * i.quantity);
-            }, 0);
-            const discount = (state.customerType === 'member' && state.selectedMember) ? subtotal * 0.1 : 0;
-            const voucherInput = parseInt(document.getElementById('voucher-input').value) || 0;
-            const voucherDiscount = Math.min(voucherInput, subtotal - discount);
-            const tax = (subtotal - discount - voucherDiscount) * 0.11;
-            const total = (subtotal - discount - voucherDiscount) + tax;
-
-            document.getElementById('cart-subtotal').innerText = formatIDR(subtotal);
-            document.getElementById('cart-discount').innerText = '-' + formatIDR(discount);
-            document.getElementById('cart-voucher').innerText = '-' + formatIDR(voucherDiscount);
-            document.getElementById('cart-tax').innerText = formatIDR(tax);
-            document.getElementById('cart-total').innerText = formatIDR(total);
-
-            const btn = document.getElementById('btn-checkout');
-            if(state.cart.length > 0) {
-                btn.disabled = false;
-                btn.classList.replace('bg-gray-100', 'bg-slate-900');
-                btn.classList.replace('text-gray-400', 'text-white');
-                btn.classList.add('hover:bg-slate-800', 'active:scale-95');
-            } else {
-                btn.disabled = true;
-                btn.classList.replace('bg-slate-900', 'bg-gray-100');
-                btn.classList.replace('text-white', 'text-gray-400');
-                btn.classList.remove('hover:bg-slate-800', 'active:scale-95');
-            }
-            document.getElementById('discount-row').classList.toggle('hidden', discount <= 0);
-            document.getElementById('voucher-row').classList.toggle('hidden', voucherDiscount <= 0);
-        }
-
-        function setCustomerType(type) {
-            state.customerType = type;
-            const isMember = type === 'member';
-            document.getElementById('type-umum').className = `flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${!isMember ? 'bg-pink-500 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`;
-            document.getElementById('type-member').className = `flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${isMember ? 'bg-pink-500 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`;
-            document.getElementById('member-selector').classList.toggle('hidden', !isMember);
-            document.getElementById('umum-info').classList.toggle('hidden', isMember);
-            if (!isMember) state.selectedMember = null;
-            updateCartUI();
-        }
-
-        function handleMemberSelect(e) {
-            const val = e.target.value;
-            const badge = document.getElementById('selected-member-badge');
-            state.selectedMember = state.members.find(m => `${m.name} (${m.phone})` === val);
-            if (state.selectedMember) {
-                document.getElementById('member-initial').innerText = state.selectedMember.name.charAt(0);
-                document.getElementById('member-name-display').innerText = state.selectedMember.name;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-            calculateTotals();
-        }
-
-        function clearCart() {
-            state.cart = [];
-            state.selectedMember = null;
-            state.customerType = 'umum';
-            document.getElementById('member-dropdown').value = '';
-            document.getElementById('voucher-input').value = '';
-            setCustomerType('umum');
-            updateCartUI();
-        }
-
-        function openPaymentModal() {
-            if (state.customerType === 'member' && !state.selectedMember) return showNotification('Pilih member!', 'error');
-            document.getElementById('payment-total-display').innerText = document.getElementById('cart-total').innerText;
-            const modal = document.getElementById('payment-modal');
-            const content = document.getElementById('payment-modal-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
-        }
-
-        function closePaymentModal() {
-            const modal = document.getElementById('payment-modal');
-            const content = document.getElementById('payment-modal-content');
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        function processPayment(method) {
-            const total = parseInt(document.getElementById('cart-total').innerText.replace(/[^0-9]/g, ''));
-            const subtotal = state.cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-            
-            const trxId = `TRX-${Date.now().toString().slice(-6)}`;
-            const cashierSel = document.getElementById('active-cashier-select');
-            const cashierName = cashierSel.options[cashierSel.selectedIndex]?.text || 'Admin';
-
-            state.transactions.unshift({
-                id: trxId,
-                date: new Date().toLocaleString('id-ID'),
-                customer: state.selectedMember ? state.selectedMember.name : 'Umum',
-                cashier: cashierName,
-                items: [...state.cart],
-                total: total,
-                paymentMethod: method
-            });
-
-            state.revenue += total;
-            state.cart.forEach(item => {
-                const p = state.products.find(prod => prod.id === item.id);
-                if (p) p.stock -= item.quantity;
-            });
-
-            if (state.selectedMember) {
-                state.selectedMember.points += Math.floor(total / 10000);
-            }
-
-            saveState();
-            showNotification(`Pembayaran ${method} Berhasil! #${trxId}`);
-            closePaymentModal();
-            clearCart();
-            renderPOS();
-            
-            // Update active cashier badge
-            updateCashierBadge();
-        }
-
-        function saveOpeningBalance() {
-            const input = document.getElementById('opening-balance-input');
-            const val = parseInt(input.value) || 0;
-            
-            const sel = document.getElementById('active-cashier-select');
-            const cashierName = sel.options[sel.selectedIndex]?.text || 'Admin';
-
-            state.openingBalance = val;
-            state.lastOpeningDate = new Date().toLocaleDateString('id-ID');
-            
-            if (!state.shiftLogs) state.shiftLogs = [];
-            state.shiftLogs.unshift({
-                id: `SHF-${Date.now()}`,
-                type: 'OPEN',
-                date: new Date().toLocaleString('id-ID'),
-                cashier: cashierName,
-                amount: val,
-                note: 'Mulai Shift'
-            });
-
-            saveState();
-            
-            document.getElementById('opening-balance-modal').classList.add('hidden');
-            showNotification('Shift dimulai dengan modal: ' + formatIDR(val));
-        }
-
-        function openCloseCashierModal() {
-            console.log('Attempting to open Close Cashier modal...');
-            try {
-                // Ensure state and transactions exist
-                if (!state) {
-                    alert('Error: State is not initialized');
-                    return;
-                }
-
-                const today = new Date().toLocaleDateString('id-ID');
-                console.log('Today date:', today);
-
-                const history = Array.isArray(state.transactions) ? state.transactions : [];
-                // More robust date matching
-                const todayTransactions = history.filter(t => {
-                    if (!t.date) return false;
-                    // Check if date or simplified date matches
-                    return t.date.includes(today) || t.date.split(',')[0].trim() === today;
-                });
-                
-                console.log('Today transactions count:', todayTransactions.length);
-
-                const totalSales = todayTransactions.reduce((sum, t) => sum + (Number(t.total) || 0), 0);
-                const cashSales = todayTransactions.filter(t => t.paymentMethod === 'Tunai').reduce((sum, t) => sum + (Number(t.total) || 0), 0);
-                const nonCashSales = totalSales - cashSales;
-                const expectedCash = (Number(state.openingBalance) || 0) + cashSales;
-
-                const setElText = (id, text) => {
-                    const el = document.getElementById(id);
-                    if (el) el.innerText = text;
-                    else console.warn(`Element ${id} not found`);
-                };
-
-                setElText('close-opening-balance', formatIDR(state.openingBalance || 0));
-                setElText('close-total-sales', formatIDR(totalSales));
-                setElText('close-cash-expected', formatIDR(expectedCash));
-                setElText('close-non-cash', formatIDR(nonCashSales));
-                
-                const actualInput = document.getElementById('close-cash-actual');
-                if (actualInput) actualInput.value = '';
-                
-                const diffRow = document.getElementById('closing-diff-row');
-                if (diffRow) diffRow.classList.add('hidden');
-
-                const modal = document.getElementById('close-cashier-modal');
-                const content = document.getElementById('close-cashier-modal-content');
-                
-                if (!modal || !content) {
-                    alert('Error: Elemen modal tidak ditemukan di halaman.');
-                    return;
-                }
-
-                modal.classList.remove('hidden');
-                setTimeout(() => { 
-                    modal.classList.remove('opacity-0'); 
-                    content.classList.remove('scale-95'); 
-                }, 10);
-                
-                if (window.lucide) lucide.createIcons();
-                console.log('Modal opened successfully');
-            } catch (err) {
-                console.error('CRITICAL ERROR in openCloseCashierModal:', err);
-                alert('Terjadi kesalahan sistem: ' + err.message);
-            }
-        }
-
-        function closeCloseCashierModal() {
-            const modal = document.getElementById('close-cashier-modal');
-            const content = document.getElementById('close-cashier-modal-content');
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        function calculateClosingDiff() {
-            const expectedText = document.getElementById('close-cash-expected').innerText;
-            const expected = parseInt(expectedText.replace(/[^0-9]/g, '')) || 0;
-            const actual = parseInt(document.getElementById('close-cash-actual').value) || 0;
-            const diff = actual - expected;
-
-            const row = document.getElementById('closing-diff-row');
-            const valEl = document.getElementById('closing-diff-val');
-            
-            if (actual > 0) {
-                row.classList.remove('hidden');
-                valEl.innerText = (diff >= 0 ? '+' : '') + formatIDR(diff);
-                valEl.className = diff >= 0 ? 'font-black text-green-600' : 'font-black text-red-600';
-            } else {
-                row.classList.add('hidden');
-            }
-        }
-
-        function finishShift() {
-            const expectedText = document.getElementById('close-cash-expected').innerText;
-            const expected = parseInt(expectedText.replace(/[^0-9]/g, '')) || 0;
-            const actual = parseInt(document.getElementById('close-cash-actual').value) || 0;
-            const diff = actual - expected;
-
-            if (isNaN(actual) || actual < 0) return alert('Masukkan jumlah uang fisik di laci!');
-            if (!confirm('Apakah Anda yakin ingin menyelesaikan shift dan menutup kasir? Semua data hari ini telah tercatat.')) return;
-            
-            const sel = document.getElementById('active-cashier-select');
-            const cashierName = sel.options[sel.selectedIndex]?.text || 'Admin';
-
-            if (!state.shiftLogs) state.shiftLogs = [];
-            state.shiftLogs.unshift({
-                id: `SHF-${Date.now()}`,
-                type: 'CLOSE',
-                date: new Date().toLocaleString('id-ID'),
-                cashier: cashierName,
-                amount: actual,
-                note: `Tutup Shift (Seharusnya: ${formatIDR(expected)}, Selisih: ${formatIDR(diff)})`
-            });
-
-            state.lastOpeningDate = null;
-            state.openingBalance = 0;
-            saveState();
-            
-            showNotification('Shift Berhasil Ditutup. Mengalihkan...');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
-        }
-
-        function updateCashierBadge() {
-            const sel = document.getElementById('active-cashier-select');
-            const name = sel.options[sel.selectedIndex]?.text || 'Admin';
-            document.getElementById('cashier-initial').innerText = name.charAt(0).toUpperCase();
-        }
-
-        window.onload = () => {
+        window.addEventListener('DOMContentLoaded', () => {
             loadState();
-            
-            // Fill Categories
-            const catSel = document.getElementById('categories-list');
-            [...new Set(state.products.map(p => p.category))].forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c; opt.innerText = c;
-                catSel.appendChild(opt);
-            });
+            injectSidebar('pos');
 
-            // Fill Members
-            const memSel = document.getElementById('members-list');
-            state.members.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = `${m.name} (${m.phone})`;
-                memSel.appendChild(opt);
-            });
+            // Fill member list
+            const datalist = document.getElementById('member-list');
+            if (datalist && state.members) {
+                datalist.innerHTML = state.members.map(m => `<option value="${m.name} (${m.phone})">`).join('');
+            }
 
-            // Fill Cashiers
-            const cashierSel = document.getElementById('active-cashier-select');
-            state.cashiers.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id; opt.innerText = c.name;
-                cashierSel.appendChild(opt);
-            });
-            cashierSel.addEventListener('change', updateCashierBadge);
-
-            // Listeners
-            document.getElementById('pos-search').addEventListener('input', renderPOS);
-            document.getElementById('pos-category').addEventListener('change', renderPOS);
-            document.getElementById('member-dropdown').addEventListener('input', handleMemberSelect);
-            document.getElementById('voucher-input').addEventListener('input', calculateTotals);
-
+            renderPOSCategories();
             renderPOS();
             updateCartUI();
-            updateCashierBadge();
-            lucide.createIcons();
-            
-            window.addEventListener('beforeunload', saveState);
 
-            // Check Opening Balance for today
-            const today = new Date().toLocaleDateString('id-ID');
-            if (state.lastOpeningDate !== today) {
-                document.getElementById('opening-balance-modal').classList.remove('hidden');
-                document.getElementById('opening-balance-input').focus();
-            }
-        };
+            const searchInput = document.getElementById('pos-search');
+            if (searchInput) searchInput.addEventListener('input', renderPOS);
+
+            // Shortcuts
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'F8') checkout();
+            });
+        });
     </script>
+    <div id="payment-modal" class="fixed inset-0 z-[100] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl transform scale-95 transition-all duration-300" id="payment-modal-content">
+            <h2 class="text-2xl font-black mb-1 text-center" style="color:#1C1A16;">Pilih Pembayaran</h2>
+            <p class="text-center text-xs font-bold text-gray-400 mb-8" id="pay-total-display"></p>
+            
+            <div class="grid grid-cols-1 gap-3">
+                <button onclick="processPayment('Tunai')" class="flex items-center gap-4 p-5 rounded-2xl border-2 border-transparent bg-gray-50 hover:bg-orange-50 hover:border-orange-500 transition-all group">
+                    <div class="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform"><i data-lucide="banknote" class="w-6 h-6"></i></div>
+                    <div class="text-left"><p class="font-black text-sm">Tunai / Cash</p><p class="text-[10px] font-bold text-gray-400">Pembayaran langsung uang kertas</p></div>
+                </button>
+                <button onclick="processPayment('QRIS')" class="flex items-center gap-4 p-5 rounded-2xl border-2 border-transparent bg-gray-50 hover:bg-orange-50 hover:border-orange-500 transition-all group">
+                    <div class="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform"><i data-lucide="qr-code" class="w-6 h-6"></i></div>
+                    <div class="text-left"><p class="font-black text-sm">QRIS / E-Wallet</p><p class="text-[10px] font-bold text-gray-400">Scan QR via m-banking/e-wallet</p></div>
+                </button>
+                <button onclick="processPayment('Debit')" class="flex items-center gap-4 p-5 rounded-2xl border-2 border-transparent bg-gray-50 hover:bg-orange-50 hover:border-orange-500 transition-all group">
+                    <div class="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"><i data-lucide="credit-card" class="w-6 h-6"></i></div>
+                    <div class="text-left"><p class="font-black text-sm">Debit / Kredit</p><p class="text-[10px] font-bold text-gray-400">Mesin EDC kartu bank</p></div>
+                </button>
+            </div>
+            
+            <button onclick="closePaymentModal()" class="w-full mt-6 py-4 font-black text-gray-400 text-sm">Batal / Kembali</button>
+        </div>
+    </div>
+
 </body>
+
 </html>

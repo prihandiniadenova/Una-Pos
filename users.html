@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen User - UNA POS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="overflow-hidden" style="background:#F6F1E9; color:#3D2B00;">
+    <div class="flex h-screen w-full">
+        <aside id="main-sidebar" class="w-64 flex-shrink-0 flex flex-col transition-all duration-300 relative" style="background:#1C1A16; min-width:72px;"></aside>
+        
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <div class="h-full p-8 overflow-y-auto">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Manajemen User</h1>
+                            <p class="text-sm font-medium" style="color:#A05C00;">Kelola akses kasir & administrator</p>
+                        </div>
+                        <button onclick="openAddUserModal()" class="btn-primary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap shadow-lg shadow-orange-500/20"><i data-lucide="user-plus" class="w-4 h-4"></i> Tambah User</button>
+                    </div>
+
+                    <div class="rounded-3xl overflow-hidden shadow-sm" style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15);">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr style="background:#FFF4DC;">
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-[#A05C00]">User ID</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-[#A05C00]">Nama Lengkap</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center text-[#A05C00]">Role / Jabatan</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center text-[#A05C00]">Email / Username</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center text-[#A05C00]">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body" class="divide-y text-sm font-bold"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="user-modal" class="fixed inset-0 z-[80] bg-black/60 hidden flex items-center justify-center backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl">
+            <h2 class="text-2xl font-black mb-8" id="user-modal-title">Tambah User</h2>
+            <input type="hidden" id="user-edit-id">
+            <div class="space-y-5">
+                <div><label class="block text-[10px] font-black uppercase text-gray-400 mb-2">Nama Lengkap</label><input type="text" id="user-name" class="una-input w-full"></div>
+                <div><label class="block text-[10px] font-black uppercase text-gray-400 mb-2">Role / Jabatan</label>
+                    <select id="user-role" class="una-input w-full">
+                        <option value="Admin">Administrator</option>
+                        <option value="Kasir">Kasir / POS</option>
+                        <option value="Manager">Manager Toko</option>
+                    </select>
+                </div>
+                <div><label class="block text-[10px] font-black uppercase text-gray-400 mb-2">Email / ID Akses</label><input type="text" id="user-email" class="una-input w-full"></div>
+                <div><label class="block text-[10px] font-black uppercase text-gray-400 mb-2">Password / Sandi</label><input type="password" id="user-pass" class="una-input w-full"></div>
+            </div>
+            <div class="mt-10 flex gap-4"><button onclick="closeUserModal()" class="flex-1 py-4 font-black">Batal</button><button onclick="saveUser()" class="btn-primary flex-[2] py-4 rounded-2xl font-black">Simpan User</button></div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        window.onload = () => {
+            loadState();
+            injectSidebar('users');
+            renderUsers();
+        };
+    </script>
+</body>
+</html>

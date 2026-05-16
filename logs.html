@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Aktivitas - UNA POS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="overflow-hidden" style="background:#F6F1E9; color:#3D2B00;">
+    <div class="flex h-screen w-full">
+        <aside id="main-sidebar" class="w-64 flex-shrink-0 flex flex-col transition-all duration-300 relative" style="background:#1C1A16; min-width:72px;"></aside>
+        
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <div class="h-full p-8 overflow-y-auto">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Log Aktivitas</h1>
+                            <p class="text-sm font-medium" style="color:#A05C00;">Jejak riwayat tindakan seluruh pengguna sistem</p>
+                        </div>
+                        <button onclick="clearLogs()" class="p-2.5 rounded-xl transition-all shadow-md bg-red-500 text-white flex items-center gap-2 px-4 text-xs font-black"><i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Log</button>
+                    </div>
+
+                    <div class="rounded-3xl overflow-hidden shadow-sm" style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15);">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr style="background:#FFF4DC;">
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-[#A05C00]">Waktu</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-[#A05C00]">User</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-[#A05C00]">Tindakan</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-[#A05C00]">Detail / Objek</th>
+                                </tr>
+                            </thead>
+                            <tbody id="log-table-body" class="divide-y text-sm font-bold"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        window.onload = () => {
+            loadState();
+            injectSidebar('logs');
+            renderLogs();
+        };
+
+        function renderLogs() {
+            const tbody = document.getElementById('log-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = state.logs.map(l => `
+                <tr class="hover:bg-gray-50/50">
+                    <td class="px-8 py-5 text-gray-400 text-xs">${l.date}</td>
+                    <td class="px-8 py-5 text-orange-900">${l.user}</td>
+                    <td class="px-8 py-5 font-black uppercase text-[10px] tracking-widest">${l.action}</td>
+                    <td class="px-8 py-5 text-gray-600 italic font-medium">${l.detail}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="p-20 text-center opacity-30 italic font-black">Belum ada log aktivitas</td></tr>';
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function clearLogs() {
+            if (confirm('Bersihkan seluruh log aktivitas? Tindakan ini tidak bisa dibatalkan.')) {
+                state.logs = [];
+                saveState();
+                renderLogs();
+                showNotification('Seluruh log dihapus');
+            }
+        }
+    </script>
+</body>
+</html>

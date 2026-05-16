@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutasi Stok - UNA POS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="overflow-hidden" style="background:#F6F1E9; color:#3D2B00;">
+    <div class="flex h-screen w-full">
+        <aside id="main-sidebar" class="w-60 flex flex-col transition-all duration-300 relative" style="background:#1C1A16; min-width:72px;"></aside>
+        
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <div class="h-full p-8 overflow-y-auto">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Mutasi Stok</h1>
+                            <p class="text-sm font-medium" style="color:#A05C00;">Riwayat perubahan stok & penyesuaian manual</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                            <button onclick="exportToExcel('stock-history')" class="btn-export px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2 text-xs font-black bg-green-600 text-white hover:bg-green-700">
+                                <i data-lucide="download" class="w-4 h-4"></i> Export Data
+                            </button>
+                            <button onclick="openManualMutationModal()" class="btn-primary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap"><i data-lucide="plus" class="w-4 h-4"></i> Catat Mutasi</button>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl overflow-hidden shadow-sm" style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15);">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr style="background:#FFF4DC;">
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Informasi Produk</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Mutasi</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Perubahan</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Oleh</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Waktu</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Keterangan</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stock-mutation-table-body" class="divide-y text-sm"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center px-4">
+                         <div class="text-xs font-bold" style="color:#A05C0066;">Menampilkan <span id="sh-range" class="text-[#A05C00]">0 - 0</span> dari <span id="sh-total" class="text-[#A05C00]">0</span> riwayat</div>
+                         <div id="sh-page-controls" class="flex items-center gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="mutation-modal" class="fixed inset-0 z-[85] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl transform scale-95 transition-transform duration-300" id="mutation-modal-content">
+            <h2 class="text-2xl font-black mb-6 flex items-center gap-3"><span class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:#FFF4DC; color:#FF9A00;"><i data-lucide="refresh-cw" class="w-5 h-5"></i></span> Mutasi Stok Manual</h2>
+            <div class="space-y-6">
+                <div class="bg-[#F6F1E9] p-2 rounded-2xl flex gap-1">
+                    <button onclick="setMutationType('add')" id="mut-type-add" class="mut-type-btn flex-1 py-3 text-xs font-black rounded-xl transition-all">Penambahan</button>
+                    <button onclick="setMutationType('sub')" id="mut-type-sub" class="mut-type-btn flex-1 py-3 text-xs font-black rounded-xl transition-all">Pengurangan</button>
+                    <button onclick="setMutationType('set')" id="mut-type-set" class="mut-type-btn flex-1 py-3 text-xs font-black rounded-xl transition-all">Penyesuaian</button>
+                </div>
+                <div><label class="block text-xs font-black uppercase text-gray-400 mb-2">Pilih Produk</label><input type="text" list="mutation-prod-list" id="mutation-prod-input" placeholder="Ketik nama atau SKU produk..." class="una-input w-full"><datalist id="mutation-prod-list"></datalist></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label id="mut-val-label" class="block text-xs font-black uppercase text-gray-400 mb-2">Jumlah</label><input type="number" id="mutation-value" placeholder="0" class="una-input w-full font-black text-xl"></div>
+                    <div><label class="block text-xs font-black uppercase text-gray-400 mb-2">Keterangan</label><input type="text" id="mutation-note" placeholder="Opname/Rusak/Dll" class="una-input w-full"></div>
+                </div>
+                <div class="pt-6 border-t border-dashed border-gray-100 flex flex-col gap-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-center text-gray-400">Otorisasi Kasir Diperlukan</p>
+                    <div class="grid grid-cols-2 gap-4">
+                         <div><label class="block text-[10px] font-black uppercase text-gray-400 mb-1">ID Kasir</label><input type="text" id="mutation-auth-id" placeholder="Admin" class="una-input w-full text-xs"></div>
+                         <div><label class="block text-[10px] font-black uppercase text-gray-400 mb-1">Sandi Kasir</label><input type="password" id="mutation-auth-pass" placeholder="••••" class="una-input w-full text-xs"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 flex gap-4"><button onclick="closeMutationModal()" class="flex-1 py-4 font-black text-gray-400">Batal</button><button onclick="saveManualMutation()" class="btn-primary flex-[2] py-4 rounded-2xl font-black shadow-lg shadow-orange-500/20">Proses Mutasi</button></div>
+        </div>
+    </div>
+
+    <div id="edit-mutation-modal" class="fixed inset-0 z-[85] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl">
+            <h2 class="text-2xl font-black mb-6" style="color:#1C1A16;">Edit Keterangan</h2>
+            <input type="hidden" id="edit-mut-index">
+            <div>
+                <label class="block text-xs font-black uppercase text-gray-400 mb-2">Keterangan Mutasi</label>
+                <textarea id="edit-mut-note" class="una-input w-full h-32 leading-relaxed" placeholder="Tulis alasan perubahan..."></textarea>
+            </div>
+            <div class="mt-8 flex gap-4">
+                <button onclick="closeEditMutationModal()" class="flex-1 py-4 font-black text-gray-400">Batal</button>
+                <button onclick="saveEditMutation()" class="btn-primary flex-[2] py-4 rounded-2xl font-black shadow-lg shadow-orange-500/20">Update Keterangan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        window.onload = () => {
+            loadState();
+            injectSidebar('mutations');
+            renderStockHistory();
+            setMutationType('add');
+        };
+
+        let currentMutationType = 'add';
+        function setMutationType(type) {
+            currentMutationType = type;
+            document.querySelectorAll('.mut-type-btn').forEach(btn => btn.classList.remove('bg-white', 'shadow-sm', 'border', 'border-orange-200'));
+            const activeBtn = document.getElementById(`mut-type-${type}`);
+            if (activeBtn) activeBtn.classList.add('bg-white', 'shadow-sm', 'border', 'border-orange-200');
+            const label = document.getElementById('mut-val-label');
+            if (label) {
+                if (type === 'add') label.innerText = 'Jumlah Penambahan';
+                if (type === 'sub') label.innerText = 'Jumlah Pengurangan';
+                if (type === 'set') label.innerText = 'Set Stok Baru';
+            }
+        }
+    </script>
+</body>
+</html>

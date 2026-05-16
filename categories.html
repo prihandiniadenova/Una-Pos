@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kategori Produk - UNA POS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="overflow-hidden" style="background:#F6F1E9; color:#3D2B00;">
+    <div class="flex h-screen w-full">
+        <aside id="main-sidebar" class="w-64 flex-shrink-0 flex flex-col transition-all duration-300 relative" style="background:#1C1A16; min-width:72px;"></aside>
+        
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <div class="h-full p-8 overflow-y-auto">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+                        <div>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Kategori Produk</h1>
+                            <p class="text-sm font-medium" style="color:#A05C00;">Grup produk untuk kemudahan filter & laporan</p>
+                        </div>
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <input type="text" id="new-category-tab-input" placeholder="Nama kategori baru..." class="una-input flex-1 md:flex-none text-sm">
+                            <button onclick="addCategoryFromTab()" class="btn-primary px-6 py-2.5 rounded-xl text-sm font-black flex items-center gap-2 shadow-lg shadow-orange-500/20"><i data-lucide="plus" class="w-4 h-4"></i> Tambah</button>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl overflow-hidden shadow-sm" style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15);">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr style="background:#FFF4DC;">
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Nama Kategori</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Tgl Ditambahkan</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Total Produk</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="category-master-table-body" class="divide-y text-sm"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center px-4">
+                        <div class="text-xs font-bold" style="color:#A05C0066;">Total: <span id="cat-total" class="text-[#A05C00]">0</span> Kategori</div>
+                        <div class="flex items-center gap-2" id="cat-page-controls"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Edit Kategori -->
+    <div id="edit-category-modal" class="fixed inset-0 z-[80] bg-black/60 hidden flex items-center justify-center backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div id="edit-category-modal-content" class="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl transform scale-95 transition-transform duration-300">
+            <h2 class="text-2xl font-black mb-8">Edit Kategori</h2>
+            <input type="hidden" id="edit-cat-old-name">
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-400 mb-2 ml-1">Nama Kategori</label>
+                    <input type="text" id="edit-cat-name" class="una-input w-full px-5 py-4" placeholder="Misal: Gamis Mewah">
+                </div>
+            </div>
+            <div class="mt-10 flex gap-4">
+                <button onclick="closeEditCategoryModal()" class="flex-1 py-4 font-black text-gray-400 hover:text-gray-600 transition-colors">Batal</button>
+                <button onclick="saveEditCategory()" class="btn-primary flex-[2] py-4 rounded-2xl font-black shadow-lg shadow-orange-500/20">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!loadState()) {
+                initProducts();
+                saveState();
+            }
+            injectSidebar('categories');
+            renderCategoryMasterTab();
+            
+            const input = document.getElementById('new-category-tab-input');
+            if (input) {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') addCategoryFromTab();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

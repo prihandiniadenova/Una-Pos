@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Shift - UNA POS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="overflow-hidden" style="background:#F6F1E9; color:#3D2B00;">
+    <div class="flex h-screen w-full">
+        <aside id="main-sidebar" class="w-60 flex flex-col transition-all duration-300 relative" style="background:#1C1A16; min-width:72px;"></aside>
+        
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <div class="h-full p-8 overflow-y-auto">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Log Shift & Kas</h1>
+                            <p class="text-sm font-medium" style="color:#A05C00;">Rekapitulasi pembukaan & penutupan laci kasir</p>
+                        </div>
+                        <button onclick="exportToExcel('shifts')" class="p-2.5 rounded-xl transition-all shadow-md" style="background:#16A34A; color:white;"><i data-lucide="download" class="w-5 h-5"></i></button>
+                    </div>
+
+                    <div id="shift-history-list" class="space-y-4"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/app.js"></script>
+    <script>
+        window.onload = () => {
+            loadState();
+            injectSidebar('shifts');
+            renderShiftLogs();
+        };
+    </script>
+</body>
+</html>

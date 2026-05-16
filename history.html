@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Penjualan - UNA POS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="overflow-hidden" style="background:#F6F1E9; color:#3D2B00;">
+    <div class="flex h-screen w-full">
+        <aside id="main-sidebar" class="w-64 flex-shrink-0 flex flex-col transition-all duration-300 relative" style="background:#1C1A16; min-width:72px;"></aside>
+        
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <div class="h-full p-8 overflow-y-auto">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">History Transaksi</h1>
+                            <p class="text-sm font-medium" style="color:#A05C00;">Daftar transaksi penjualan yang telah selesai</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportToExcel('transactions')" class="btn-export px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-2 text-xs font-black bg-green-600 text-white hover:bg-green-700">
+                                <i data-lucide="download" class="w-4 h-4"></i> Export Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl overflow-hidden shadow-sm" style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15);">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr style="background:#FFF4DC;">
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">ID Transaksi</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Pelanggan</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-right" style="color:#A05C00;">Total Bayar</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Status</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y text-sm"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-8 flex justify-between items-center px-4">
+                         <div class="text-xs font-bold" style="color:#A05C0066;">Total: <span id="trx-total" class="text-[#A05C00]">0</span> transaksi</div>
+                         <div id="trx-page-controls" class="flex items-center gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/app.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            injectSidebar('history');
+            renderHistory();
+        });
+    </script>
+</body>
+</html>
