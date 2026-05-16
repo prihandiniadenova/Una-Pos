@@ -236,19 +236,32 @@
                     <i data-lucide="external-link" class="w-4 h-4 flex-shrink-0"></i>
                     <span class="text-sm sidebar-text whitespace-nowrap">Buka Kasir</span>
                 </a>
-                <div class="sidebar-divider h-px my-2" style="background:rgba(255,255,255,0.07);"></div>
+
+                <div class="pt-4 pb-2 px-3 sidebar-text">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em]" style="color:#A05C0066;">Master Data</p>
+                </div>
+                
+                <button onclick="switchTab('category-master')" id="btn-category-master"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="Kategori Produk">
+                    <i data-lucide="layers" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Kategori Produk</span>
+                </button>
                 <button onclick="switchTab('inventory')" id="btn-inventory"
                     class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
-                    title="Stok Produk">
+                    title="Produk">
                     <i data-lucide="package" class="w-4 h-4 flex-shrink-0"></i>
-                    <span class="text-sm sidebar-text whitespace-nowrap">Stok Produk</span>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Produk</span>
                 </button>
                 <button onclick="switchTab('members')" id="btn-members"
                     class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
-                    title="Membership">
+                    title="Member">
                     <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
-                    <span class="text-sm sidebar-text whitespace-nowrap">Membership</span>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Member</span>
                 </button>
+
+                <div class="sidebar-divider h-px my-2" style="background:rgba(255,255,255,0.07);"></div>
+                
                 <button onclick="switchTab('stock-history')" id="btn-stock-history"
                     class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
                     title="History Stok">
@@ -276,14 +289,6 @@
                 </button>
             </nav>
 
-            <div class="p-4 sidebar-text">
-                <div class="p-4 rounded-2xl"
-                    style="background:linear-gradient(135deg,rgba(255,154,0,0.2),rgba(255,211,61,0.1)); border:1px solid rgba(255,154,0,0.25);">
-                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:#FF9A0099;">Omzet Hari
-                        Ini</p>
-                    <p id="daily-revenue" class="text-base font-black" style="color:#FFD93D;">Rp 0</p>
-                </div>
-            </div>
         </aside>
 
         <!-- Main Content -->
@@ -323,13 +328,13 @@
                                 style="color:#A05C00;">Nama Produk</label>
                             <input type="text" id="new-prod-name" class="una-input w-full">
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-3" id="prod-info-grid">
                             <div>
                                 <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
                                     style="color:#A05C00;">Kategori</label>
                                 <select id="new-prod-category" class="una-input w-full"></select>
                             </div>
-                            <div>
+                            <div id="stock-input-container">
                                 <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
                                     style="color:#A05C00;">Stok</label>
                                 <input type="number" id="new-prod-stock" min="0" class="una-input w-full">
@@ -627,12 +632,58 @@
                 </div>
             </div>
 
+            <!-- Category Master Tab -->
+            <div id="tab-category-master" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Kategori Produk</h1>
+                            <p class="text-sm font-medium" style="color:#A05C00;">Kelola pengelompokan jenis produk Anda</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                            <div class="relative flex-1 md:flex-none md:min-w-[250px]">
+                                <i data-lucide="layers" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style="color:#A05C0066;"></i>
+                                <input type="text" id="new-category-tab-input" placeholder="Nama Kategori Baru..." class="una-input w-full pl-10 text-xs">
+                            </div>
+                            <button onclick="addCategoryFromTab()" class="btn-primary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap">
+                                <i data-lucide="plus" class="w-4 h-4"></i> Tambah Kategori
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="rounded-[2.5rem] overflow-hidden" style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15); box-shadow:0 10px 30px rgba(255,154,0,0.05);">
+                        <table class="w-full text-left">
+                            <thead style="background:#FFF4DC; border-bottom:1px solid rgba(255,154,0,0.15);">
+                                <tr>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Nama Kategori</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Tanggal Ditambahkan</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Jumlah Produk</th>
+                                    <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="category-master-table-body" class="divide-y text-sm font-medium" style="border-color:rgba(255,154,0,0.08);">
+                                <!-- Category rows injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="category-pagination" class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+                        <div class="text-xs font-bold" style="color:#A05C0066;">
+                            Menampilkan <span id="cat-range" class="text-[#A05C00]">0 - 0</span> dari <span id="cat-total" class="text-[#A05C00]">0</span> kategori
+                        </div>
+                        <div class="flex items-center gap-2" id="cat-page-controls">
+                            <!-- Page buttons injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Inventory Tab -->
             <div id="tab-inventory" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
                 <div class="max-w-6xl mx-auto">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
                         <div>
-                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Manajemen Stok Produk</h1>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Manajemen Produk</h1>
                             <p class="text-sm font-medium" style="color:#A05C00;">Sisa stok barang di gudang & etalase</p>
                         </div>
                         <div class="flex flex-wrap gap-2 w-full md:w-auto">
@@ -651,9 +702,6 @@
                             </select>
                             <button onclick="exportToExcel('inventory')" class="p-2.5 rounded-xl transition-all shadow-md" style="background:#16A34A; color:white;">
                                 <i data-lucide="download" class="w-5 h-5"></i>
-                            </button>
-                            <button onclick="openCategoryModal()" class="p-2.5 rounded-xl transition-all shadow-md" style="background:#FF9A00; color:white;">
-                                <i data-lucide="layers" class="w-5 h-5"></i>
                             </button>
                             <button onclick="openAddProductModal()" class="btn-primary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap">
                                 <i data-lucide="plus" class="w-4 h-4"></i> Produk Baru
@@ -677,6 +725,15 @@
                                 <!-- Data rows injected here -->
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <div id="inventory-pagination" class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+                        <div class="text-xs font-bold" style="color:#A05C0066;">
+                            Menampilkan <span id="inv-range" class="text-[#A05C00]">0 - 0</span> dari <span id="inv-total" class="text-[#A05C00]">0</span> produk
+                        </div>
+                        <div class="flex items-center gap-2" id="inv-page-controls">
+                            <!-- Page buttons injected here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -757,33 +814,59 @@
 
                     <!-- Member Tab -->
                     <div id="tab-members" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
-                        <div class="max-w-4xl mx-auto">
-                            <div class="flex justify-between items-end mb-8">
+                        <div class="max-w-6xl mx-auto">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
                                 <div>
-                                    <h1 class="text-2xl font-black" style="color:#1C1A16;">Data Pelanggan Setia</h1>
-                                    <p class="text-sm" style="color:#A05C00;">Total <span id="member-count">0</span>
-                                        member terdaftar
-                                    </p>
+                                    <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Data Pelanggan Setia</h1>
+                                    <p class="text-sm font-medium" style="color:#A05C00;">Total <span id="member-count">0</span> member terdaftar</p>
                                 </div>
-                                <div class="flex gap-2">
-                                    <button onclick="exportToExcel('members')"
-                                        class="px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md transition-all"
-                                        style="background:#16A34A; color:white;">
-                                        <i data-lucide="download" class="w-4 h-4"></i> Export
+                                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                                    <div class="relative flex-1 md:flex-none md:min-w-[250px]">
+                                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style="color:#A05C0066;"></i>
+                                        <input type="text" id="member-search" placeholder="Cari Nama atau No. HP..." class="una-input w-full pl-10 text-xs">
+                                    </div>
+                                    <button onclick="exportToExcel('members')" class="p-2.5 rounded-xl transition-all shadow-md" style="background:#16A34A; color:white;">
+                                        <i data-lucide="download" class="w-5 h-5"></i>
                                     </button>
-                                    <button onclick="openAddMemberModal()"
-                                        class="btn-primary px-5 py-2.5 rounded-xl text-sm">Daftar
-                                        Member Baru</button>
+                                    <button onclick="openAddMemberModal()" class="btn-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap">
+                                        <i data-lucide="user-plus" class="w-4 h-4"></i> Daftar Baru
+                                    </button>
                                 </div>
                             </div>
-                            <div id="member-list" class="grid gap-4"></div>
+
+                            <div class="rounded-[2.5rem] overflow-hidden shadow-xl" style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15);">
+                                <table class="w-full text-left border-collapse">
+                                    <thead style="background:#FFF4DC; border-bottom:1.5px solid rgba(255,154,0,0.15);">
+                                        <tr>
+                                            <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Member ID</th>
+                                            <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Nama Lengkap</th>
+                                            <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Kontak</th>
+                                            <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Points</th>
+                                            <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Join Date</th>
+                                            <th class="px-8 py-5 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="member-table-body" class="divide-y text-sm font-medium" style="border-color:rgba(255,154,0,0.08);">
+                                        <!-- Member rows injected here -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id="member-pagination" class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+                                <div class="text-xs font-bold" style="color:#A05C0066;">
+                                    Menampilkan <span id="mem-range" class="text-[#A05C00]">0 - 0</span> dari <span id="mem-total" class="text-[#A05C00]">0</span> member
+                                </div>
+                                <div class="flex items-center gap-2" id="mem-page-controls">
+                                    <!-- Page buttons injected here -->
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Stock History Tab -->
                     <div id="tab-stock-history" class="tab-content h-full p-8 overflow-y-auto"
                         style="background:#F6F1E9;">
-                        <div class="max-w-4xl mx-auto">
+                        <div class="max-w-6xl mx-auto">
                             <div class="flex justify-between items-end mb-8">
                                 <div>
                                     <h1 class="text-2xl font-black" style="color:#1C1A16;">History Perubahan Stok</h1>
@@ -797,6 +880,15 @@
                                 </button>
                             </div>
                             <div id="stock-history-list-tab" class="grid gap-4"></div>
+
+                            <div id="stock-hist-pagination" class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+                                <div class="text-xs font-bold" style="color:#A05C0066;">
+                                    Menampilkan <span id="sh-range" class="text-[#A05C00]">0 - 0</span> dari <span id="sh-total" class="text-[#A05C00]">0</span> riwayat
+                                </div>
+                                <div class="flex items-center gap-2" id="sh-page-controls">
+                                    <!-- Page buttons injected here -->
+                                </div>
+                            </div>
                             <div id="empty-stock-history-tab" class="py-20 text-center" style="color:#C06800;">
                                 <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
                                 <p>Belum ada riwayat perubahan stok.</p>
@@ -826,10 +918,18 @@
                                 </div>
                             </div>
                             <div id="history-container" class="space-y-4"></div>
+
+                            <div id="trx-history-pagination" class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+                                <div class="text-xs font-bold" style="color:#A05C0066;">
+                                    Menampilkan <span id="trx-range" class="text-[#A05C00]">0 - 0</span> dari <span id="trx-total" class="text-[#A05C00]">0</span> transaksi
+                                </div>
+                                <div class="flex items-center gap-2" id="trx-page-controls">
+                                    <!-- Page buttons injected here -->
+                                </div>
+                            </div>
                             <div id="empty-history" class="py-20 text-center" style="color:#C06800;">
                                 <i data-lucide="frown" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
                                 <p>Belum ada transaksi hari ini.</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -977,7 +1077,10 @@
     </div>
 
     <script>
-        const CATEGORIES = ['Pakaian', 'Gamis', 'Dress', 'Atasan', 'Mukenah', 'Tas', 'Sandal', 'Sepatu', 'Make Up', 'Bedak', 'Foundation', 'Sunscreen', 'Lipstick', 'Moisturizer'];
+        const CATEGORIES = ['Pakaian', 'Gamis', 'Dress', 'Atasan', 'Mukenah', 'Tas', 'Sandal', 'Sepatu', 'Make Up', 'Bedak', 'Foundation', 'Sunscreen', 'Lipstick', 'Moisturizer'].map(c => ({
+            name: c,
+            dateAdded: '15 Mei 2024'
+        }));
         const BRANDS = ['Aura Glow', 'Zivana Luxury', 'Modesty Silk', 'Luxe Couture', 'Serenity', 'BeautyLab', 'Wardah Premium', 'Scarlett', 'Somethinc Elite'];
 
         let state = {
@@ -1000,8 +1103,43 @@
             revenue: 0,
             openingBalance: 0,
             lastOpeningDate: null,
-            shiftLogs: []
+            shiftLogs: [],
+            inventoryPage: 1,
+            inventoryItemsPerPage: 10,
+            categoryPage: 1,
+            categoryItemsPerPage: 10,
+            memberPage: 1,
+            memberItemsPerPage: 10,
+            stockHistoryPage: 1,
+            stockHistoryItemsPerPage: 10,
+            transactionPage: 1,
+            transactionItemsPerPage: 5
         };
+        
+        function loadState() {
+            let saved = localStorage.getItem('una_pos_state') || localStorage.getItem('lumiere_pos_state');
+            if (saved) {
+                state = JSON.parse(saved);
+                if (!state.cashiers) state.cashiers = [{ id: 'admin', name: 'Super Admin', pass: 'admin', joinDate: '15 Mei 2024' }];
+                if (!state.categories) state.categories = [...CATEGORIES];
+                if (!state.transactionAuditLog) state.transactionAuditLog = [];
+                
+                // Initialize pagination state if missing from localStorage
+                if (state.inventoryPage === undefined) state.inventoryPage = 1;
+                if (state.inventoryItemsPerPage === undefined) state.inventoryItemsPerPage = 10;
+                if (state.categoryPage === undefined) state.categoryPage = 1;
+                if (state.categoryItemsPerPage === undefined) state.categoryItemsPerPage = 10;
+                if (state.memberPage === undefined) state.memberPage = 1;
+                if (state.memberItemsPerPage === undefined) state.memberItemsPerPage = 10;
+                if (state.stockHistoryPage === undefined) state.stockHistoryPage = 1;
+                if (state.stockHistoryItemsPerPage === undefined) state.stockHistoryItemsPerPage = 10;
+                if (state.transactionPage === undefined) state.transactionPage = 1;
+                if (state.transactionItemsPerPage === undefined) state.transactionItemsPerPage = 5;
+                
+                return true;
+            }
+            return false;
+        }
 
         function initProducts() {
             let idCounter = 1;
@@ -1035,6 +1173,7 @@
 
             if (tabId === 'dashboard') renderDashboard();
             if (tabId === 'inventory') renderInventory();
+            if (tabId === 'category-master') renderCategoryMasterTab();
             if (tabId === 'members') renderMembers();
             if (tabId === 'history') renderHistory();
             if (tabId === 'shifthistory') renderShiftLogs();
@@ -1093,6 +1232,7 @@
         }
 
         let editingCashierId = null;
+        let editingProductId = null;
 
         function renderCashiers() {
             const list = state.cashiers || [{ id: 'admin', name: 'Super Admin', pass: 'admin', joinDate: '15 Mei 2024' }];
@@ -1228,8 +1368,9 @@
 
             const cats = state.categories || [...CATEGORIES];
             cats.forEach(c => {
+                const cName = typeof c === 'string' ? c : c.name;
                 const opt = document.createElement('option');
-                opt.value = c; opt.innerText = c;
+                opt.value = cName; opt.innerText = cName;
                 if (catSel) catSel.appendChild(opt.cloneNode(true));
                 if (newProdCatSel) newProdCatSel.appendChild(opt.cloneNode(true));
                 if (posCatSel) posCatSel.appendChild(opt.cloneNode(true));
@@ -1243,11 +1384,12 @@
             const cats = state.categories || [...CATEGORIES];
 
             cats.forEach(c => {
+                const cName = typeof c === 'string' ? c : c.name;
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center bg-gray-50 p-3 rounded-xl";
                 div.innerHTML = `
-                    <span class="font-bold text-slate-700 text-sm">${c}</span>
-                    <button onclick="deleteCategory('${c}')" class="text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <span class="font-bold text-slate-700 text-sm">${cName}</span>
+                    <button onclick="deleteCategory('${cName}')" class="text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 `;
                 listContainer.appendChild(div);
             });
@@ -1278,9 +1420,12 @@
             if (!val) return showNotification('Nama kategori wajib diisi!', 'error');
 
             if (!state.categories) state.categories = [...CATEGORIES];
-            if (state.categories.includes(val)) return showNotification('Kategori sudah ada!', 'error');
+            if (state.categories.some(c => (typeof c === 'string' ? c : c.name) === val)) return showNotification('Kategori sudah ada!', 'error');
 
-            state.categories.push(val);
+            state.categories.push({
+                name: val,
+                dateAdded: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+            });
             saveState();
             renderCategoryList();
             renderCategoryOptions();
@@ -1288,11 +1433,94 @@
             showNotification('Kategori berhasil ditambahkan!');
         }
 
+        function addCategoryFromTab() {
+            const input = document.getElementById('new-category-tab-input');
+            const val = input.value.trim();
+            if (!val) return showNotification('Nama kategori wajib diisi!', 'error');
+
+            if (!state.categories) state.categories = [...CATEGORIES];
+            if (state.categories.some(c => (typeof c === 'string' ? c : c.name) === val)) return showNotification('Kategori sudah ada!', 'error');
+
+            state.categories.push({
+                name: val,
+                dateAdded: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+            });
+            saveState();
+            renderCategoryMasterTab();
+            renderCategoryOptions();
+            input.value = '';
+            showNotification('Kategori berhasil ditambahkan!');
+        }
+
+        function renderCategoryMasterTab() {
+            const tbody = document.getElementById('category-master-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const cats = state.categories || [...CATEGORIES];
+            
+            // Pagination Logic
+            const totalItems = cats.length;
+            const itemsPerPage = state.categoryItemsPerPage || 10;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (state.categoryPage > totalPages && totalPages > 0) state.categoryPage = totalPages;
+            if (state.categoryPage < 1) state.categoryPage = 1;
+
+            const startIdx = (state.categoryPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            const paginatedItems = cats.slice(startIdx, endIdx);
+
+            document.getElementById('cat-total').innerText = totalItems;
+            document.getElementById('cat-range').innerText = totalItems > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+
+            paginatedItems.forEach(c => {
+                const cName = typeof c === 'string' ? c : c.name;
+                const cDate = typeof c === 'string' ? '-' : c.dateAdded;
+                const productCount = state.products.filter(p => p.category === cName).length;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-8 py-5">
+                        <span class="font-black text-slate-800">${cName}</span>
+                    </td>
+                    <td class="px-8 py-5 text-center">
+                        <span class="text-[11px] font-bold text-gray-400">${cDate}</span>
+                    </td>
+                    <td class="px-8 py-5 text-center">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black" style="background:#FFF4DC; color:#A05C00;">${productCount} Produk</span>
+                    </td>
+                    <td class="px-8 py-5 text-center">
+                        <button onclick="deleteCategoryFromTab('${cName}')" class="p-2 rounded-lg transition-all" style="background:#FFF0F0; color:#EF4444;" title="Hapus Kategori">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            renderPagination('cat-page-controls', state.categoryPage, totalPages, (p) => { state.categoryPage = p; renderCategoryMasterTab(); });
+            lucide.createIcons();
+        }
+
+        function deleteCategoryFromTab(catName) {
+            const count = state.products.filter(p => p.category === catName).length;
+            if (count > 0) return showNotification(`Terdapat ${count} produk dengan kategori ini. Hapus produk terlebih dahulu!`, 'error');
+
+            const conf = confirm(`Anda yakin ingin menghapus kategori "${catName}"?`);
+            if (!conf) return;
+
+            state.categories = state.categories.filter(c => c !== catName);
+            saveState();
+            renderCategoryMasterTab();
+            renderCategoryOptions();
+            showNotification('Kategori berhasil dihapus!');
+        }
+
         function deleteCategory(catName) {
             const count = state.products.filter(p => p.category === catName).length;
             if (count > 0) return showNotification(`Terdapat ${count} produk dengan kategori ini. Hapus produk terlebih dahulu!`, 'error');
 
-            state.categories = state.categories.filter(c => c !== catName);
+            state.categories = state.categories.filter(c => (typeof c === 'string' ? c : c.name) !== catName);
             saveState();
             renderCategoryList();
             renderCategoryOptions();
@@ -1624,6 +1852,44 @@
             updateCartUI();
         }
 
+        function renderPagination(containerId, currentPage, totalPages, onPageChange) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `p-2 rounded-xl transition-all ${currentPage === 1 ? 'opacity-20 cursor-not-allowed' : 'hover:bg-[#FFD93D]'}`;
+            prevBtn.innerHTML = '<i data-lucide="chevron-left" class="w-4 h-4"></i>';
+            prevBtn.onclick = () => { if (currentPage > 1) onPageChange(currentPage - 1); };
+            container.appendChild(prevBtn);
+
+            // Page numbers
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                const isActive = i === currentPage;
+                btn.className = `w-9 h-9 rounded-xl font-black text-xs transition-all ${isActive ? 'bg-[#FF9A00] text-white shadow-md' : 'bg-white border border-gray-100 text-[#A05C00] hover:bg-[#FFF4DC]'}`;
+                btn.innerText = i;
+                btn.onclick = () => onPageChange(i);
+                container.appendChild(btn);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `p-2 rounded-xl transition-all ${currentPage === totalPages ? 'opacity-20 cursor-not-allowed' : 'hover:bg-[#FFD93D]'}`;
+            nextBtn.innerHTML = '<i data-lucide="chevron-right" class="w-4 h-4"></i>';
+            nextBtn.onclick = () => { if (currentPage < totalPages) onPageChange(currentPage + 1); };
+            container.appendChild(nextBtn);
+
+            lucide.createIcons();
+        }
+
         function renderInventory() {
             const tbody = document.getElementById('inventory-table-body');
             const searchInput = document.getElementById('inventory-search');
@@ -1648,7 +1914,27 @@
                 return matchesSearch && matchesCat && matchesStatus;
             });
 
-            filtered.slice(0, 50).forEach(p => {
+            // Pagination Logic
+            const totalItems = filtered.length;
+            const itemsPerPage = state.inventoryItemsPerPage || 10;
+            const currentPage = state.inventoryPage || 1;
+            
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            // Ensure current page is valid
+            let activePage = currentPage;
+            if (activePage > totalPages && totalPages > 0) activePage = totalPages;
+            if (activePage < 1) activePage = 1;
+            state.inventoryPage = activePage; // Sync back to state
+
+            const startIdx = (activePage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            const paginatedItems = filtered.slice(startIdx, endIdx);
+
+            document.getElementById('inv-total').innerText = totalItems;
+            document.getElementById('inv-range').innerText = totalItems > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+
+            paginatedItems.forEach(p => {
                 const discountAmount = p.discount || 0;
                 const priceDisplay = discountAmount > 0
                     ? `<span class="line-through text-gray-400 text-[10px] block">${formatIDR(p.price)}</span> ${formatIDR(p.price * (1 - discountAmount / 100))} <span class="text-[9px] font-bold px-1 rounded ml-1" style="background:#FFF0D0; color:#FF9A00;">-${discountAmount}%</span>`
@@ -1673,56 +1959,119 @@
                             '<span class="text-[10px] px-2 py-1 rounded-full font-black" style="background:#F0FDF4; color:#16A34A;">Tersedia</span>'}
                     </td>
                     <td class="p-5 text-center flex justify-center gap-1">
-                        <button onclick="openStockModal(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.stock})" class="p-2 rounded-lg transition-all" style="background:#FFF0D0; color:#FF9A00;" title="Edit Stok">
-                            <i data-lucide="package" class="w-4 h-4"></i>
+                        <button onclick="openEditProductModal(${p.id})" class="p-2 rounded-lg transition-all" style="background:#FFF0D0; color:#FF9A00;" title="Edit Produk">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="openDiscountModal(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${discountAmount})" class="p-2 rounded-lg transition-all" style="background:#FFF8EE; color:#A05C00;" title="Set Diskon">
-                            <i data-lucide="tag" class="w-4 h-4"></i>
+                        <button onclick="deleteProduct(${p.id})" class="p-2 rounded-lg transition-all" style="background:#FFF0F0; color:#EF4444;" title="Hapus Produk">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
+
+            renderPagination('inv-page-controls', state.inventoryPage, totalPages, (p) => { state.inventoryPage = p; renderInventory(); });
+            lucide.createIcons();
         }
 
         function renderMembers() {
-            const list = document.getElementById('member-list');
-            document.getElementById('member-count').innerText = state.members.length;
-            list.innerHTML = '';
-            state.members.forEach(m => {
-                const card = document.createElement('div');
-                card.className = "bg-white p-6 rounded-3xl border flex items-center justify-between shadow-sm animate-pop";
-                card.style.borderColor = "rgba(255,154,0,0.1)";
-                card.innerHTML = `
-                    <div class="flex items-center gap-5">
-                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl" style="background:#FF9A00; color:white;">${m.name.charAt(0)}</div>
-                        <div>
-                            <h4 class="font-black" style="color:#1C1A16;">${m.name}</h4>
-                            <p class="text-sm font-bold" style="color:#A05C00;">${m.phone}</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:#A05C0066;">Loyalty Points</p>
-                        <p class="text-2xl font-black" style="color:#FF9A00;">${m.points}</p>
-                    </div>
+            const tbody = document.getElementById('member-table-body');
+            const searchInput = document.getElementById('member-search');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+            if (!state.members) state.members = [];
+
+            const filtered = state.members.filter(m => 
+                m.name.toLowerCase().includes(searchTerm) || 
+                m.phone.toLowerCase().includes(searchTerm) ||
+                m.id.toLowerCase().includes(searchTerm)
+            );
+
+            const totalItems = filtered.length;
+            const countEl = document.getElementById('member-count');
+            if (countEl) countEl.innerText = totalItems;
+            
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            // Pagination Logic
+            const itemsPerPage = state.memberItemsPerPage || 10;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (state.memberPage > totalPages && totalPages > 0) state.memberPage = totalPages;
+            if (state.memberPage < 1) state.memberPage = 1;
+
+            const startIdx = (state.memberPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            const paginatedItems = filtered.slice(startIdx, endIdx);
+
+            document.getElementById('mem-total').innerText = totalItems;
+            document.getElementById('mem-range').innerText = totalItems > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+
+            paginatedItems.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-8 py-5 font-mono text-xs font-black text-slate-400">${m.id}</td>
+                    <td class="px-8 py-5 font-black text-slate-800">${m.name}</td>
+                    <td class="px-8 py-5 text-center font-bold text-slate-600">${m.phone}</td>
+                    <td class="px-8 py-5 text-center">
+                        <span class="text-base font-black px-3 py-1 rounded-full" style="background:#FFF4DC; color:#FF9A00;">${m.points} pts</span>
+                    </td>
+                    <td class="px-8 py-5 text-center text-[11px] font-bold text-gray-400">${m.joinDate}</td>
+                    <td class="px-8 py-5 text-center">
+                         <button onclick="deleteMember('${m.id}')" class="p-2 rounded-lg transition-all" style="background:#FFF0F0; color:#EF4444;" title="Hapus Member">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
                 `;
-                list.appendChild(card);
+                tbody.appendChild(tr);
             });
+            renderPagination('mem-page-controls', state.memberPage, totalPages, (p) => { state.memberPage = p; renderMembers(); });
+            lucide.createIcons();
+        }
+
+        function deleteMember(id) {
+            const m = state.members.find(x => x.id === id);
+            if (!m) return;
+            if (!confirm(`Hapus member "${m.name}"?`)) return;
+            state.members = state.members.filter(x => x.id !== id);
+            saveState();
+            renderMembers();
+            showNotification('Member berhasil dihapus!');
         }
 
         function renderHistory() {
             const container = document.getElementById('history-container');
             const empty = document.getElementById('empty-history');
+            const totalItems = state.transactions.length;
 
-            if (state.transactions.length === 0) {
+            if (totalItems === 0) {
                 empty.style.display = 'block';
                 container.innerHTML = '';
+                document.getElementById('trx-total').innerText = '0';
+                document.getElementById('trx-range').innerText = '0 - 0';
                 return;
             }
 
             empty.style.display = 'none';
             container.innerHTML = '';
-            state.transactions.forEach(t => {
+            
+            // Pagination Logic
+            const itemsPerPage = state.transactionItemsPerPage || 5;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (state.transactionPage > totalPages && totalPages > 0) state.transactionPage = totalPages;
+            if (state.transactionPage < 1) state.transactionPage = 1;
+
+            const startIdx = (state.transactionPage - 1) * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+            const paginatedItems = state.transactions.slice(startIdx, endIdx);
+
+            document.getElementById('trx-total').innerText = totalItems;
+            document.getElementById('trx-range').innerText = totalItems > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+
+            paginatedItems.forEach(t => {
                 const el = document.createElement('div');
                 el.className = "bg-white p-5 rounded-3xl border flex flex-col md:flex-row justify-between items-center gap-4 animate-pop";
                 el.style.borderColor = "rgba(255,154,0,0.1)";
@@ -1748,6 +2097,7 @@
                 `;
                 container.appendChild(el);
             });
+            renderPagination('trx-page-controls', state.transactionPage, totalPages, (p) => { state.transactionPage = p; renderHistory(); });
             lucide.createIcons();
         }
 
@@ -1890,20 +2240,86 @@
         }
 
         function openAddProductModal() {
+            editingProductId = null;
             const modal = document.getElementById('add-product-modal');
             const content = document.getElementById('add-product-modal-content');
+            const grid = document.getElementById('prod-info-grid');
+            const stockContainer = document.getElementById('stock-input-container');
 
             // Reset fields
             document.getElementById('new-prod-name').value = '';
-            document.getElementById('new-prod-category').value = CATEGORIES[0];
+            document.getElementById('new-prod-category').value = state.categories[0] || CATEGORIES[0];
             document.getElementById('new-prod-stock').value = '';
             document.getElementById('new-prod-price').value = '';
 
+            // Show stock input
+            if (stockContainer) stockContainer.classList.remove('hidden');
+            if (grid) {
+                grid.classList.remove('grid-cols-1');
+                grid.classList.add('grid-cols-2');
+            }
+
+            const title = modal.querySelector('h2');
+            if (title) title.innerHTML = '<span class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:#FFD93D;"><i data-lucide="box" class="w-4 h-4" style="color:#3D2B00;"></i></span> Tambah Produk';
+            const btn = modal.querySelector('.btn-primary');
+            if (btn) btn.innerText = 'Simpan';
+
             modal.classList.remove('hidden');
-            // Trigger reflow
             void modal.offsetWidth;
             modal.classList.remove('opacity-0');
             content.classList.remove('scale-95');
+            lucide.createIcons();
+        }
+
+        function openEditProductModal(id) {
+            editingProductId = id;
+            const product = state.products.find(p => p.id === id);
+            if (!product) return;
+
+            const modal = document.getElementById('add-product-modal');
+            const content = document.getElementById('add-product-modal-content');
+            const grid = document.getElementById('prod-info-grid');
+            const stockContainer = document.getElementById('stock-input-container');
+
+            document.getElementById('new-prod-name').value = product.name;
+            document.getElementById('new-prod-category').value = product.category;
+            document.getElementById('new-prod-stock').value = product.stock;
+            
+            // Format price for display
+            const priceInput = document.getElementById('new-prod-price');
+            priceInput.value = new Intl.NumberFormat('id-ID').format(product.price);
+
+            // Hide stock input for editing
+            if (stockContainer) stockContainer.classList.add('hidden');
+            if (grid) {
+                grid.classList.remove('grid-cols-2');
+                grid.classList.add('grid-cols-1');
+            }
+
+            const title = modal.querySelector('h2');
+            if (title) title.innerHTML = '<span class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:#FF9A00;"><i data-lucide="edit-3" class="w-4 h-4 text-white"></i></span> Edit Produk';
+            const btn = modal.querySelector('.btn-primary');
+            if (btn) btn.innerText = 'Perbarui';
+
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+            lucide.createIcons();
+        }
+
+        function deleteProduct(id) {
+            const product = state.products.find(p => p.id === id);
+            if (!product) return;
+
+            const conf = confirm(`Anda yakin ingin menghapus produk "${product.name}"?`);
+            if (!conf) return;
+
+            state.products = state.products.filter(p => p.id !== id);
+            showNotification(`Produk "${product.name}" berhasil dihapus.`);
+            renderInventory();
+            renderPOS();
+            saveState();
         }
 
         function closeAddProductModal() {
@@ -1922,26 +2338,40 @@
             const name = document.getElementById('new-prod-name').value;
             const category = document.getElementById('new-prod-category').value;
             const stock = parseInt(document.getElementById('new-prod-stock').value) || 0;
-            const price = parseInt(document.getElementById('new-prod-price').value) || 0;
+            
+            // Parse formatted price
+            const rawPrice = document.getElementById('new-prod-price').value.replace(/\D/g, '');
+            const price = parseInt(rawPrice) || 0;
 
             if (!name) return showNotification('Nama produk wajib diisi!', 'error');
             if (price <= 0) return showNotification('Harga tidak valid!', 'error');
 
-            const newId = state.products.length > 0 ? Math.max(...state.products.map(p => p.id)) + 1 : 1;
-            const sku = `UNA-${category.substring(0, 2).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+            if (editingProductId) {
+                const product = state.products.find(p => p.id === editingProductId);
+                if (product) {
+                    product.name = name;
+                    product.category = category;
+                    product.stock = stock;
+                    product.price = price;
+                    showNotification('Produk berhasil diperbarui!');
+                }
+            } else {
+                const newId = state.products.length > 0 ? Math.max(...state.products.map(p => p.id)) + 1 : 1;
+                const sku = `UNA-${category.substring(0, 2).toUpperCase()}-${Date.now().toString().slice(-4)}`;
 
-            const newProd = {
-                id: newId,
-                name,
-                category,
-                price,
-                stock,
-                sku
-            };
+                const newProd = {
+                    id: newId,
+                    name,
+                    category,
+                    price,
+                    stock,
+                    sku
+                };
 
-            state.products.unshift(newProd); // Add to beginning
+                state.products.unshift(newProd);
+                showNotification('Produk berhasil ditambahkan!');
+            }
 
-            showNotification('Produk berhasil ditambahkan!');
             closeAddProductModal();
             renderInventory();
             renderPOS();
@@ -2022,22 +2452,40 @@
         }
 
         function renderStockHistory() {
-            const listContainer = document.getElementById('stock-history-list'); // Modal container (legacy)
-            const tabContainer = document.getElementById('stock-history-list-tab'); // New Tab container
+            const listContainer = document.getElementById('stock-history-list'); 
+            const tabContainer = document.getElementById('stock-history-list-tab'); 
             const emptyStateModal = document.getElementById('empty-stock-history');
             const emptyStateTab = document.getElementById('empty-stock-history-tab');
 
             const history = state.stockHistory || [];
+            const totalItems = history.length;
 
             // Handle Tab View
             if (tabContainer) {
-                if (history.length === 0) {
+                if (totalItems === 0) {
                     tabContainer.innerHTML = '';
                     if (emptyStateTab) emptyStateTab.classList.remove('hidden');
+                    document.getElementById('sh-total').innerText = '0';
+                    document.getElementById('sh-range').innerText = '0 - 0';
                 } else {
                     if (emptyStateTab) emptyStateTab.classList.add('hidden');
                     tabContainer.innerHTML = '';
-                    history.forEach(h => {
+                    
+                    // Pagination Logic
+                    const itemsPerPage = state.stockHistoryItemsPerPage || 10;
+                    const totalPages = Math.ceil(totalItems / itemsPerPage);
+                    
+                    if (state.stockHistoryPage > totalPages && totalPages > 0) state.stockHistoryPage = totalPages;
+                    if (state.stockHistoryPage < 1) state.stockHistoryPage = 1;
+
+                    const startIdx = (state.stockHistoryPage - 1) * itemsPerPage;
+                    const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+                    const paginatedItems = history.slice(startIdx, endIdx);
+
+                    document.getElementById('sh-total').innerText = totalItems;
+                    document.getElementById('sh-range').innerText = totalItems > 0 ? `${startIdx + 1} - ${endIdx}` : '0 - 0';
+
+                    paginatedItems.forEach(h => {
                         const card = document.createElement('div');
                         card.className = "bg-white p-6 rounded-3xl border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 animate-pop shadow-sm hover:shadow-md transition-all";
                         const diffColor = h.diff > 0 ? 'text-green-500 bg-green-50' : (h.diff < 0 ? 'text-red-500 bg-red-50' : 'text-gray-500 bg-gray-200');
@@ -2063,6 +2511,7 @@
                         `;
                         tabContainer.appendChild(card);
                     });
+                    renderPagination('sh-page-controls', state.stockHistoryPage, totalPages, (p) => { state.stockHistoryPage = p; renderStockHistory(); });
                 }
             }
 
@@ -2201,7 +2650,9 @@
 
             if (!name || !phone) return showNotification('Nama dan Nomor HP wajib diisi!', 'error');
 
+            if (!state.members) state.members = [];
             const newId = `MEM${String(state.members.length + 1).padStart(3, '0')}`;
+            
             const newMember = {
                 id: newId,
                 name: name,
@@ -2213,9 +2664,11 @@
             state.members.push(newMember);
 
             const memSel = document.getElementById('members-list');
-            const opt = document.createElement('option');
-            opt.value = `${newMember.name} (${newMember.phone})`;
-            memSel.appendChild(opt);
+            if (memSel) {
+                const opt = document.createElement('option');
+                opt.value = `${newMember.name} (${newMember.phone})`;
+                memSel.appendChild(opt);
+            }
 
             showNotification('Member baru berhasil didaftarkan!');
             closeAddMemberModal();
@@ -2227,17 +2680,6 @@
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
         }
 
-        function loadState() {
-            let saved = localStorage.getItem('una_pos_state') || localStorage.getItem('lumiere_pos_state');
-            if (saved) {
-                state = JSON.parse(saved);
-                if (!state.cashiers) state.cashiers = [{ id: 'admin', name: 'Super Admin', pass: 'admin', joinDate: '15 Mei 2024' }];
-                if (!state.categories) state.categories = [...CATEGORIES];
-                if (!state.transactionAuditLog) state.transactionAuditLog = [];
-                return true;
-            }
-            return false;
-        }
 
         function saveState() {
             localStorage.setItem('una_pos_state', JSON.stringify(state));
@@ -2443,21 +2885,63 @@
             // Default Tab
             switchTab('dashboard');
 
-            // Fill Member Dropdown
+            // Fill Member Dropdown (if exists)
             const memSel = document.getElementById('members-list');
-            state.members.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = `${m.name} (${m.phone})`;
-                memSel.appendChild(opt);
-            });
+            if (memSel && state.members) {
+                state.members.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = `${m.name} (${m.phone})`;
+                    memSel.appendChild(opt);
+                });
+            }
 
             // Default Tab
             switchTab('dashboard');
 
             // Event Listeners for Management
-            document.getElementById('inventory-search').addEventListener('input', renderInventory);
-            document.getElementById('inventory-category').addEventListener('input', renderInventory);
-            document.getElementById('inventory-status-filter').addEventListener('input', renderInventory);
+            document.getElementById('inventory-search').addEventListener('input', () => { state.inventoryPage = 1; renderInventory(); });
+            document.getElementById('inventory-category').addEventListener('change', () => { state.inventoryPage = 1; renderInventory(); });
+            document.getElementById('inventory-status-filter').addEventListener('change', () => { state.inventoryPage = 1; renderInventory(); });
+
+            // Category Tab Enter Key
+            const catInputTab = document.getElementById('new-category-tab-input');
+            if (catInputTab) {
+                catInputTab.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') addCategoryFromTab();
+                });
+            }
+
+            // Member Search
+            const memSearch = document.getElementById('member-search');
+            if (memSearch) {
+                memSearch.addEventListener('input', () => {
+                    state.memberPage = 1;
+                    renderMembers();
+                });
+            }
+
+            // Member Add Modal Enter Key
+            ['new-mem-name', 'new-mem-phone'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') saveNewMember();
+                    });
+                }
+            });
+
+            // Price Formatting
+            const priceInput = document.getElementById('new-prod-price');
+            if (priceInput) {
+                priceInput.addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value === "") {
+                        e.target.value = "";
+                        return;
+                    }
+                    e.target.value = new Intl.NumberFormat('id-ID').format(value);
+                });
+            }
 
             // Save on unload
             window.addEventListener('beforeunload', saveState);
