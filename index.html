@@ -1,0 +1,2468 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNA POS - Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .animate-pop {
+            animation: pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.88);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        :root {
+            --bg: #F6F1E9;
+            --yellow: #FFD93D;
+            --orange: #FF9A00;
+            --brown: #7A4F01;
+            --sidebar-bg: #1C1A16;
+            --card-bg: #FFFDF8;
+        }
+
+        /* Sidebar */
+        #main-sidebar {
+            background: var(--sidebar-bg);
+            border-right: none;
+        }
+
+        #main-sidebar .nav-btn {
+            color: #9B9488;
+        }
+
+        #main-sidebar .nav-btn:hover {
+            background: rgba(255, 211, 61, 0.1) !important;
+            color: #FFD93D !important;
+        }
+
+        #main-sidebar .nav-btn.active-nav {
+            background: rgba(255, 154, 0, 0.15) !important;
+            color: #FF9A00 !important;
+            border-right: 3px solid #FF9A00;
+            font-weight: 700;
+        }
+
+        #main-sidebar .sidebar-divider {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Sidebar Collapsed Styles */
+        #main-sidebar.collapsed {
+            width: 72px !important;
+        }
+
+        #main-sidebar.collapsed .sidebar-text {
+            display: none !important;
+        }
+
+        #main-sidebar.collapsed nav {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        #main-sidebar.collapsed .nav-btn {
+            justify-content: center;
+            padding: 0.7rem;
+            gap: 0;
+        }
+
+        /* Cards */
+        .una-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 154, 0, 0.12);
+            border-radius: 1.25rem;
+        }
+
+        /* Inputs */
+        .una-input {
+            background: #FFF8EE;
+            border: 1.5px solid #FFD93D40;
+            border-radius: 0.875rem;
+            padding: 0.75rem 1rem;
+            outline: none;
+            transition: all 0.2s;
+            color: #3D2B00;
+        }
+
+        .una-input:focus {
+            border-color: #FF9A00;
+            box-shadow: 0 0 0 3px rgba(255, 154, 0, 0.15);
+            background: #FFFDF8;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #FF9A00, #FFD93D);
+            color: #3D2B00;
+            font-weight: 800;
+            border-radius: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(255, 154, 0, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(255, 154, 0, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* Tables */
+        table thead th {
+            background: #FFF4DC;
+            color: #A05C00;
+        }
+
+        table tbody tr:hover td {
+            background: #FFF8EE;
+        }
+
+        /* Badge pill */
+        .badge-orange {
+            background: #FFF0CC;
+            color: #C06800;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* Toast */
+        #notification .notif-inner {
+            background: #1C1A16;
+            border: 1px solid rgba(255, 211, 61, 0.25);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FFD93D44;
+            border-radius: 99px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF9A0066;
+        }
+    </style>
+</head>
+
+<body class="overflow-hidden" style="background:#F6F1E9; color:#3D2B00; font-family:'Plus Jakarta Sans',sans-serif;">
+
+    <div class="flex h-screen w-full">
+
+        <!-- Sidebar Navigation -->
+        <aside id="main-sidebar" class="w-60 flex flex-col transition-all duration-300 relative"
+            style="background:#1C1A16; min-width:72px;">
+            <div class="px-5 py-6 flex items-center justify-between">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="flex-shrink-0 p-2.5 rounded-xl"
+                        style="background:linear-gradient(135deg,#FF9A00,#FFD93D);">
+                        <i data-lucide="shopping-bag" class="w-5 h-5" style="color:#3D2B00;"></i>
+                    </div>
+                    <span class="font-black text-lg tracking-tight sidebar-text whitespace-nowrap"
+                        style="color:#FFD93D;">UNA <span style="color:#FF9A00;">POS</span></span>
+                </div>
+                <button onclick="toggleSidebar()" class="p-1.5 rounded-lg transition-all" style="color:#9B9488;"
+                    onmouseover="this.style.color='#FFD93D'" onmouseout="this.style.color='#9B9488'">
+                    <i data-lucide="menu" id="sidebar-toggle-icon" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 px-3 py-2 space-y-1">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="Dashboard">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Dashboard</span>
+                </button>
+                <a href="pos.html" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="Buka Kasir" style="color:#9B9488; text-decoration:none;">
+                    <i data-lucide="external-link" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Buka Kasir</span>
+                </a>
+                <div class="sidebar-divider h-px my-2" style="background:rgba(255,255,255,0.07);"></div>
+                <button onclick="switchTab('inventory')" id="btn-inventory"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="Stok Produk">
+                    <i data-lucide="package" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Stok Produk</span>
+                </button>
+                <button onclick="switchTab('members')" id="btn-members"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="Membership">
+                    <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Membership</span>
+                </button>
+                <button onclick="switchTab('stock-history')" id="btn-stock-history"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="History Stok">
+                    <i data-lucide="archive" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">History Stok</span>
+                </button>
+                <button onclick="switchTab('history')" id="btn-history"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="History Transaksi">
+                    <i data-lucide="receipt" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">History Transaksi</span>
+                </button>
+                <button onclick="switchTab('shifthistory')" id="btn-shifthistory"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="Log Buka/Tutup">
+                    <i data-lucide="clock" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Log Shift</span>
+                </button>
+                <div class="sidebar-divider h-px my-2" style="background:rgba(255,255,255,0.07);"></div>
+                <button onclick="switchTab('cashier')" id="btn-cashier"
+                    class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                    title="Manajemen Kasir">
+                    <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="text-sm sidebar-text whitespace-nowrap">Manajemen Kasir</span>
+                </button>
+            </nav>
+
+            <div class="p-4 sidebar-text">
+                <div class="p-4 rounded-2xl"
+                    style="background:linear-gradient(135deg,rgba(255,154,0,0.2),rgba(255,211,61,0.1)); border:1px solid rgba(255,154,0,0.25);">
+                    <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:#FF9A0099;">Omzet Hari
+                        Ini</p>
+                    <p id="daily-revenue" class="text-base font-black" style="color:#FFD93D;">Rp 0</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col min-w-0 relative overflow-hidden" style="background:#F6F1E9;">
+
+            <!-- Toast Notification -->
+            <div id="notification"
+                class="fixed top-6 right-6 z-[99] transform translate-x-full opacity-0 transition-all duration-300 pointer-events-none">
+                <div class="notif-inner px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3"
+                    style="background:#1C1A16; border:1px solid rgba(255,211,61,0.3);">
+                    <div id="notif-icon" style="color:#FFD93D;"></div>
+                    <span id="notif-message" class="font-semibold text-sm tracking-wide" style="color:#FFF8EE;">Success
+                        message here</span>
+                </div>
+            </div>
+
+            <!-- Add Product Modal -->
+            <div id="add-product-modal"
+                class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="rounded-3xl w-full max-w-md p-7 shadow-2xl transform scale-95 transition-transform duration-300"
+                    id="add-product-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-black flex items-center gap-2" style="color:#3D2B00;">
+                            <span class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                style="background:#FFD93D;"><i data-lucide="box" class="w-4 h-4"
+                                    style="color:#3D2B00;"></i></span> Tambah Produk
+                        </h2>
+                        <button onclick="closeAddProductModal()"
+                            class="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                            style="background:#FFF0D0; color:#FF9A00;">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Nama Produk</label>
+                            <input type="text" id="new-prod-name" class="una-input w-full">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                    style="color:#A05C00;">Kategori</label>
+                                <select id="new-prod-category" class="una-input w-full"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                    style="color:#A05C00;">Stok</label>
+                                <input type="number" id="new-prod-stock" min="0" class="una-input w-full">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Harga (Rp)</label>
+                            <input type="number" id="new-prod-price" min="0" class="una-input w-full">
+                        </div>
+                    </div>
+                    <div class="mt-6 flex gap-3">
+                        <button onclick="closeAddProductModal()" class="flex-1 py-3 rounded-xl font-bold transition-all"
+                            style="background:#F6F1E9; color:#A05C00;">Batal</button>
+                        <button onclick="saveNewProduct()" class="btn-primary flex-1 py-3 rounded-xl">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Stock Modal -->
+            <div id="stock-modal"
+                class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="rounded-3xl w-full max-w-sm p-7 shadow-2xl transform scale-95 transition-transform duration-300"
+                    id="stock-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-black flex items-center gap-2" style="color:#3D2B00;">
+                            <span class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                style="background:#FF9A00;"><i data-lucide="package"
+                                    class="w-4 h-4 text-white"></i></span> Edit Stok
+                        </h2>
+                        <button onclick="closeStockModal()"
+                            class="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                            style="background:#FFF0D0; color:#FF9A00;">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="p-3 rounded-xl" style="background:#FFF4DC;">
+                            <p class="text-sm font-black" id="stock-prod-name" style="color:#3D2B00;">Nama Produk</p>
+                            <input type="hidden" id="stock-prod-id">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Jumlah Stok Baru</label>
+                            <input type="number" id="stock-prod-value" min="0" class="una-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Keterangan (Opsional)</label>
+                            <input type="text" id="stock-note" placeholder="Cth: Stok masuk, Koreksi data"
+                                class="una-input w-full">
+                        </div>
+                        <div class="pt-2" style="border-top:1px dashed rgba(255,154,0,0.3);">
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">ID Kasir (Otorisasi)</label>
+                            <input type="text" id="stock-auth-id" placeholder="ID Kasir" class="una-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Sandi Kasir</label>
+                            <input type="password" id="stock-auth-pass" placeholder="••••••••" class="una-input w-full">
+                        </div>
+                    </div>
+                    <div class="mt-6 flex gap-3">
+                        <button onclick="closeStockModal()" class="flex-1 py-3 rounded-xl font-bold transition-all"
+                            style="background:#F6F1E9; color:#A05C00;">Batal</button>
+                        <button onclick="saveStock()" class="btn-primary flex-1 py-3 rounded-xl">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock History Modal -->
+            <div id="stock-history-modal"
+                class="fixed inset-0 z-[80] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="rounded-3xl w-full max-w-lg p-8 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]"
+                    id="stock-history-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-black flex items-center gap-2" style="color:#3D2B00;">
+                            <span class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                style="background:#FFD93D;"><i data-lucide="history" class="w-4 h-4"
+                                    style="color:#3D2B00;"></i></span> Riwayat Edit Stok
+                        </h2>
+                        <button onclick="closeStockHistoryModal()"
+                            class="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                            style="background:#FFF0D0; color:#FF9A00;">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="overflow-y-auto flex-1 space-y-3 pr-2" id="stock-history-list"></div>
+                    <div id="empty-stock-history" class="py-10 text-center hidden" style="color:#C06800;">
+                        <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-3 opacity-30"></i>
+                        <p class="text-sm">Belum ada riwayat edit stok.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discount Product Modal -->
+            <div id="discount-modal"
+                class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="rounded-3xl w-full max-w-sm p-7 shadow-2xl transform scale-95 transition-transform duration-300"
+                    id="discount-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-black flex items-center gap-2" style="color:#3D2B00;">
+                            <span class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                style="background:#FFD93D;"><i data-lucide="tag" class="w-4 h-4"
+                                    style="color:#3D2B00;"></i></span> Set Diskon Produk
+                        </h2>
+                        <button onclick="closeDiscountModal()"
+                            class="w-8 h-8 rounded-xl flex items-center justify-center"
+                            style="background:#FFF0D0; color:#FF9A00;">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="p-3 rounded-xl" style="background:#FFF4DC;">
+                            <p class="text-sm font-black" id="disc-prod-name" style="color:#3D2B00;">Nama Produk</p>
+                            <input type="hidden" id="disc-prod-id">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Diskon (%)</label>
+                            <input type="number" id="disc-prod-value" min="0" max="100" class="una-input w-full">
+                        </div>
+                    </div>
+                    <div class="mt-6 flex gap-3">
+                        <button onclick="closeDiscountModal()" class="flex-1 py-3 rounded-xl font-bold transition-all"
+                            style="background:#F6F1E9; color:#A05C00;">Batal</button>
+                        <button onclick="saveDiscount()" class="btn-primary flex-1 py-3 rounded-xl">Terapkan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Member Modal -->
+            <div id="add-member-modal"
+                class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="rounded-3xl w-full max-w-sm p-7 shadow-2xl transform scale-95 transition-transform duration-300"
+                    id="add-member-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-black flex items-center gap-2" style="color:#3D2B00;">
+                            <span class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                style="background:#FF9A00;"><i data-lucide="user-plus"
+                                    class="w-4 h-4 text-white"></i></span> Member Baru
+                        </h2>
+                        <button onclick="closeAddMemberModal()"
+                            class="w-8 h-8 rounded-xl flex items-center justify-center"
+                            style="background:#FFF0D0; color:#FF9A00;">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Nama Lengkap</label>
+                            <input type="text" id="new-mem-name" class="una-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Nomor WhatsApp/HP</label>
+                            <input type="tel" id="new-mem-phone" class="una-input w-full">
+                        </div>
+                    </div>
+                    <div class="mt-6 flex gap-3">
+                        <button onclick="closeAddMemberModal()" class="flex-1 py-3 rounded-xl font-bold transition-all"
+                            style="background:#F6F1E9; color:#A05C00;">Batal</button>
+                        <button onclick="saveNewMember()" class="btn-primary flex-1 py-3 rounded-xl">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Modal -->
+            <div id="payment-modal"
+                class="fixed inset-0 z-[70] bg-black/50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl transform scale-95 transition-transform duration-300"
+                    id="payment-modal-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <i data-lucide="wallet" class="w-5 h-5 text-slate-700"></i> Pilih Metode
+                        </h2>
+                        <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="text-center mb-8">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Total Tagihan</p>
+                        <h3 id="payment-total-display" class="text-3xl font-black text-pink-600">Rp 0</h3>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <button onclick="processPayment('Tunai')"
+                            class="py-4 rounded-xl font-black text-slate-700 bg-white border-2 border-slate-100 hover:border-pink-500 hover:text-pink-600 hover:bg-pink-50 transition-all flex items-center justify-center gap-3">
+                            <i data-lucide="banknote" class="w-5 h-5"></i> TUNAI
+                        </button>
+                        <button onclick="processPayment('QRIS')"
+                            class="py-4 rounded-xl font-black text-slate-700 bg-white border-2 border-slate-100 hover:border-pink-500 hover:text-pink-600 hover:bg-pink-50 transition-all flex items-center justify-center gap-3">
+                            <i data-lucide="qr-code" class="w-5 h-5"></i> QRIS
+                        </button>
+                        <button onclick="processPayment('Debit')"
+                            class="py-4 rounded-xl font-black text-slate-700 bg-white border-2 border-slate-100 hover:border-pink-500 hover:text-pink-600 hover:bg-pink-50 transition-all flex items-center justify-center gap-3">
+                            <i data-lucide="credit-card" class="w-5 h-5"></i> DEBIT / KARTU
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auth Modal -->
+            <div id="auth-modal"
+                class="fixed inset-0 z-[80] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="rounded-3xl w-full max-w-sm p-7 shadow-2xl transform scale-95 transition-transform duration-300"
+                    id="auth-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-black flex items-center gap-2" style="color:#3D2B00;">
+                            <span class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                style="background:#FF9A00;"><i data-lucide="shield"
+                                    class="w-4 h-4 text-white"></i></span> Otorisasi Kasir
+                        </h2>
+                        <button onclick="closeAuthModal()" class="w-8 h-8 rounded-xl flex items-center justify-center"
+                            style="background:#FFF0D0; color:#FF9A00;">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">ID Kasir</label>
+                            <input type="text" id="auth-id" placeholder="Cth: admin" class="una-input w-full">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Password</label>
+                            <input type="password" id="auth-pass" placeholder="•••" class="una-input w-full">
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button onclick="verifyAuth()"
+                            class="btn-primary w-full py-3 rounded-xl flex justify-center items-center gap-2">
+                            <i data-lucide="unlock" class="w-4 h-4"></i> Lanjutkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Audit Log Modal -->
+            <div id="trx-log-modal"
+                class="fixed inset-0 z-[80] bg-black/50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="bg-white rounded-3xl w-full max-w-lg p-8 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]"
+                    id="trx-log-modal-content">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <i data-lucide="clipboard-list" class="w-5 h-5 text-red-500"></i> Log Pembatalan & Edit
+                        </h2>
+                        <button onclick="closeTrxLogModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="overflow-y-auto flex-1 space-y-3 pr-2" id="trx-log-list">
+                        <!-- Logs injected here -->
+                    </div>
+                    <div id="empty-trx-log" class="py-10 text-center text-gray-400 hidden">
+                        <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-4 opacity-20"></i>
+                        <p class="text-sm">Belum ada riwayat pembatalan/edit.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Payment Modal -->
+            <div id="edit-payment-modal"
+                class="fixed inset-0 z-[80] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                <div class="rounded-3xl w-full max-w-sm p-7 shadow-2xl transform scale-95 transition-transform duration-300"
+                    id="edit-payment-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                    <h2 class="text-lg font-black mb-1 flex items-center gap-2" style="color:#3D2B00;">
+                        <span class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:#FFD93D;"><i
+                                data-lucide="credit-card" class="w-4 h-4" style="color:#3D2B00;"></i></span> Edit
+                        Pembayaran
+                    </h2>
+                    <p class="text-xs mb-5" id="edit-pay-trx-info" style="color:#A05C00;"></p>
+                    <input type="hidden" id="edit-pay-trx-id">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                style="color:#A05C00;">Metode Pembayaran Baru</label>
+                            <select id="edit-pay-method" class="una-input w-full font-bold text-sm">
+                                <option value="Tunai">Tunai</option>
+                                <option value="QRIS">QRIS</option>
+                                <option value="Transfer">Transfer</option>
+                                <option value="Voucher">Voucher</option>
+                            </select>
+                        </div>
+                        <div class="pt-2 flex gap-3">
+                            <button onclick="closeEditPaymentModal()"
+                                class="flex-1 py-3 rounded-xl font-bold transition-all"
+                                style="background:#F6F1E9; color:#A05C00;">Batal</button>
+                            <button onclick="updatePaymentMethod()"
+                                class="btn-primary flex-1 py-3 rounded-xl">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="tab-inventory" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+                        <div>
+                            <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Manajemen Stok Produk</h1>
+                            <p class="text-sm font-medium" style="color:#A05C00;">Sisa stok barang di gudang & etalase</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                            <div class="relative flex-1 md:flex-none md:min-w-[200px]">
+                                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style="color:#A05C0066;"></i>
+                                <input type="text" id="inventory-search" placeholder="Cari SKU atau Nama..." class="una-input w-full pl-10 text-xs">
+                            </div>
+                            <select id="inventory-category" class="una-input text-xs font-bold" style="min-width:140px;">
+                                <option value="Semua">Semua Kategori</option>
+                            </select>
+                            <select id="inventory-status-filter" class="una-input text-xs font-bold" style="min-width:140px;">
+                                <option value="">Semua Status</option>
+                                <option value="tersedia">Tersedia</option>
+                                <option value="hampir_habis">Menipis</option>
+                                <option value="habis_terjual">Habis</option>
+                            </select>
+                            <button onclick="exportToExcel('inventory')" class="p-2.5 rounded-xl transition-all shadow-md" style="background:#16A34A; color:white;">
+                                <i data-lucide="download" class="w-5 h-5"></i>
+                            </button>
+                            <button onclick="openCategoryModal()" class="p-2.5 rounded-xl transition-all shadow-md" style="background:#FF9A00; color:white;">
+                                <i data-lucide="layers" class="w-5 h-5"></i>
+                            </button>
+                            <button onclick="openAddProductModal()" class="btn-primary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap">
+                                <i data-lucide="plus" class="w-4 h-4"></i> Produk Baru
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="rounded-3xl overflow-hidden" style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15); box-shadow:0 4px 20px rgba(255,154,0,0.06);">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr style="background:#FFF4DC;">
+                                    <th class="px-5 py-4 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Produk</th>
+                                    <th class="px-5 py-4 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Kategori</th>
+                                    <th class="px-5 py-4 font-black text-[10px] uppercase tracking-widest text-right" style="color:#A05C00;">Harga Satuan</th>
+                                    <th class="px-5 py-4 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Stok</th>
+                                    <th class="px-5 py-4 font-black text-[10px] uppercase tracking-widest" style="color:#A05C00;">Status</th>
+                                    <th class="px-5 py-4 font-black text-[10px] uppercase tracking-widest text-center" style="color:#A05C00;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body" class="divide-y text-sm font-medium" style="border-color:rgba(255,154,0,0.08);">
+                                <!-- Data rows injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
+                <div class="max-w-6xl mx-auto">
+                    <div class="mb-8 text-center md:text-left">
+                        <h1 class="text-3xl font-black tracking-tight" style="color:#1C1A16;">Ringkasan Dashboard</h1>
+                        <p class="font-medium" style="color:#A05C00;">Laporan performa toko hari ini</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8" id="stats-grid">
+                        <div class="p-6 rounded-[2rem] animate-pop"
+                            style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15); box-shadow:0 4px 20px rgba(255,154,0,0.08);">
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:#FFF4DC;">
+                                <i data-lucide="banknote" class="w-6 h-6" style="color:#FF9A00;"></i>
+                            </div>
+                            <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#C06800;">Omzet Hari Ini</p>
+                            <h3 id="dash-revenue" class="text-xl font-black tracking-tight" style="color:#1C1A16;">Rp 0</h3>
+                        </div>
+                        <div class="p-6 rounded-[2rem] animate-pop"
+                            style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15); box-shadow:0 4px 20px rgba(255,154,0,0.08); animation-delay:0.1s">
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:#FFF4DC;">
+                                <i data-lucide="shopping-cart" class="w-6 h-6" style="color:#FF9A00;"></i>
+                            </div>
+                            <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#C06800;">Transaksi</p>
+                            <h3 id="dash-trx-count" class="text-xl font-black tracking-tight" style="color:#1C1A16;">0</h3>
+                        </div>
+                        <div class="p-6 rounded-[2rem] animate-pop"
+                            style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15); box-shadow:0 4px 20px rgba(255,154,0,0.08); animation-delay:0.2s">
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:#FFF4DC;">
+                                <i data-lucide="alert-triangle" class="w-6 h-6" style="color:#FF9A00;"></i>
+                            </div>
+                            <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#C06800;">Stok Menipis</p>
+                            <h3 id="dash-low-stock" class="text-xl font-black tracking-tight" style="color:#1C1A16;">0</h3>
+                        </div>
+                        <div class="p-6 rounded-[2rem] animate-pop"
+                            style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15); box-shadow:0 4px 20px rgba(255,154,0,0.08); animation-delay:0.3s">
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:#FFF4DC;">
+                                <i data-lucide="users" class="w-6 h-6" style="color:#FF9A00;"></i>
+                            </div>
+                            <p class="text-xs font-bold uppercase tracking-widest mb-1" style="color:#C06800;">Total Members</p>
+                            <h3 id="dash-members" class="text-xl font-black tracking-tight" style="color:#1C1A16;">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2">
+                            <div class="p-8 rounded-[2.5rem] h-full"
+                                style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15);">
+                                <h3 class="font-black mb-6 flex items-center gap-2" style="color:#1C1A16;">
+                                    <i data-lucide="trending-up" class="w-5 h-5" style="color:#FF9A00;"></i> Produk Paling Laris
+                                </h3>
+                                <div id="dash-top-products" class="space-y-3"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="p-8 rounded-[2.5rem] h-full relative overflow-hidden"
+                                style="background:linear-gradient(135deg,#1C1A16,#3D2B00);">
+                                <div class="relative z-10">
+                                    <h3 class="font-black mb-3" style="color:#FFD93D;">Butuh Bantuan?</h3>
+                                    <p class="text-sm mb-6 leading-relaxed" style="color:rgba(255,211,61,0.6);">Kelola bisnis Anda dengan lebih mudah menggunakan UNA POS.</p>
+                                    <button class="w-full py-3 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2"
+                                        style="background:rgba(255,211,61,0.15); color:#FFD93D; border:1px solid rgba(255,211,61,0.3);">
+                                        <i data-lucide="phone" class="w-4 h-4"></i> Hubungi Admin
+                                    </button>
+                                </div>
+                                <div class="absolute -bottom-10 -right-10 w-40 h-40 rounded-full" style="background:rgba(255,211,61,0.06);"></div>
+                                <div class="absolute -top-10 -left-10 w-24 h-24 rounded-full" style="background:rgba(255,154,0,0.08);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+                    <!-- Member Tab -->
+                    <div id="tab-members" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="flex justify-between items-end mb-8">
+                                <div>
+                                    <h1 class="text-2xl font-black" style="color:#1C1A16;">Data Pelanggan Setia</h1>
+                                    <p class="text-sm" style="color:#A05C00;">Total <span id="member-count">0</span>
+                                        member terdaftar
+                                    </p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="exportToExcel('members')"
+                                        class="px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md transition-all"
+                                        style="background:#16A34A; color:white;">
+                                        <i data-lucide="download" class="w-4 h-4"></i> Export
+                                    </button>
+                                    <button onclick="openAddMemberModal()"
+                                        class="btn-primary px-5 py-2.5 rounded-xl text-sm">Daftar
+                                        Member Baru</button>
+                                </div>
+                            </div>
+                            <div id="member-list" class="grid gap-4"></div>
+                        </div>
+                    </div>
+
+                    <!-- Stock History Tab -->
+                    <div id="tab-stock-history" class="tab-content h-full p-8 overflow-y-auto"
+                        style="background:#F6F1E9;">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="flex justify-between items-end mb-8">
+                                <div>
+                                    <h1 class="text-2xl font-black" style="color:#1C1A16;">History Perubahan Stok</h1>
+                                    <p class="text-sm" style="color:#A05C00;">Log aktivitas perubahan stok oleh kasir
+                                    </p>
+                                </div>
+                                <button onclick="exportToExcel('stock-history')"
+                                    class="px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md transition-all"
+                                    style="background:#16A34A; color:white;">
+                                    <i data-lucide="download" class="w-4 h-4"></i> Export Excel
+                                </button>
+                            </div>
+                            <div id="stock-history-list-tab" class="grid gap-4"></div>
+                            <div id="empty-stock-history-tab" class="py-20 text-center" style="color:#C06800;">
+                                <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
+                                <p>Belum ada riwayat perubahan stok.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Tab -->
+                    <div id="tab-history" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
+                        <div class="max-w-5xl mx-auto">
+                            <div class="flex justify-between items-end mb-8">
+                                <div>
+                                    <h1 class="text-2xl font-black" style="color:#1C1A16;">History Transaksi</h1>
+                                    <p class="text-sm" style="color:#A05C00;">Laporan penjualan hari ini</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="openTrxLogModal()"
+                                        class="px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 whitespace-nowrap transition-all"
+                                        style="background:#FFF4DC; color:#C06800; border:1px solid rgba(255,154,0,0.3);">
+                                        <i data-lucide="clipboard-list" class="w-4 h-4"></i> Log Riwayat
+                                    </button>
+                                    <button onclick="exportToExcel('transactions')"
+                                        class="px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md transition-all"
+                                        style="background:#16A34A; color:white;">
+                                        <i data-lucide="download" class="w-4 h-4"></i> Export Excel
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="history-container" class="space-y-4"></div>
+                            <div id="empty-history" class="py-20 text-center" style="color:#C06800;">
+                                <i data-lucide="frown" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
+                                <p>Belum ada transaksi hari ini.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shift History Tab -->
+                <div id="tab-shifthistory" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex justify-between items-end mb-8">
+                            <div>
+                                <h1 class="text-2xl font-black" style="color:#1C1A16;">Log Buka/Tutup Kasir</h1>
+                                <p class="text-sm" style="color:#A05C00;">Riwayat operasional shift kasir</p>
+                            </div>
+                            <button onclick="exportToExcel('shifts')"
+                                class="px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-md transition-all"
+                                style="background:#16A34A; color:white;">
+                                <i data-lucide="download" class="w-4 h-4"></i> Export Excel
+                            </button>
+                        </div>
+                        <div id="shift-history-list" class="grid gap-4"></div>
+                        <div id="empty-shift-history" class="py-20 text-center" style="color:#C06800;">
+                            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
+                            <p>Belum ada riwayat buka/tutup kasir.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Cashier Management -->
+                <div id="tab-cashier" class="tab-content h-full p-8 overflow-y-auto" style="background:#F6F1E9;">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
+                            <div>
+                                <h1 class="text-2xl font-black tracking-tight" style="color:#1C1A16;">Manajemen Akses
+                                    Kasir</h1>
+                                <p class="text-sm" style="color:#A05C00;">Mengatur akun staf toko untuk Otorisasi POS
+                                </p>
+                            </div>
+                            <button onclick="openAddCashierModal()"
+                                class="btn-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 whitespace-nowrap">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah Akun
+                            </button>
+                        </div>
+                        <div class="rounded-3xl overflow-hidden"
+                            style="background:#FFFDF8; border:1.5px solid rgba(255,154,0,0.15); box-shadow:0 4px 20px rgba(255,154,0,0.06);">
+                            <table class="w-full text-left">
+                                <thead style="background:#FFF4DC; border-bottom:1px solid rgba(255,154,0,0.15);">
+                                    <tr>
+                                        <th class="px-5 py-4 font-bold text-[10px] uppercase tracking-widest"
+                                            style="color:#A05C00;">ID / User</th>
+                                        <th class="px-5 py-4 font-bold text-[10px] uppercase tracking-widest"
+                                            style="color:#A05C00;">Nama Lengkap</th>
+                                        <th class="px-5 py-4 font-bold text-[10px] uppercase tracking-widest text-center"
+                                            style="color:#A05C00;">Tanggal Aktif</th>
+                                        <th class="px-5 py-4 font-bold text-[10px] uppercase tracking-widest text-center"
+                                            style="color:#A05C00;">Aksi / Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cashier-table-body" class="divide-y text-sm"
+                                    style="border-color:rgba(255,154,0,0.08);">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cashier Adding Modal -->
+                <div id="add-cashier-modal"
+                    class="fixed inset-0 z-[80] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                    <div class="rounded-3xl w-full max-w-sm p-7 shadow-2xl transform scale-95 transition-transform duration-300"
+                        id="add-cashier-modal-content"
+                        style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 id="modal-cashier-title" class="text-lg font-black flex items-center gap-2"
+                                style="color:#3D2B00;">
+                                <span class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                    style="background:#FF9A00;"><i data-lucide="user-plus"
+                                        class="w-4 h-4 text-white"></i></span> Kasir Baru
+                            </h2>
+                            <button onclick="closeAddCashierModal()"
+                                class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                style="background:#FFF0D0; color:#FF9A00;">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                    style="color:#A05C00;">Nama Lengkap</label>
+                                <input type="text" id="new-cashier-name" class="una-input w-full">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                    style="color:#A05C00;">ID Kasir (Tanpa spasi)</label>
+                                <input type="text" id="new-cashier-id" placeholder="Cth: kasir1"
+                                    class="una-input w-full disabled:opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold mb-1.5 uppercase tracking-widest"
+                                    style="color:#A05C00;">Password</label>
+                                <input type="text" id="new-cashier-pass" class="una-input w-full">
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <button onclick="saveNewCashier()"
+                                class="btn-primary w-full py-4 rounded-2xl flex justify-center items-center gap-2">
+                                <i data-lucide="save" class="w-4 h-4"></i> <span id="modal-cashier-btn-text">Simpan
+                                    Akses</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Category Master Modal -->
+                <div id="category-modal"
+                    class="fixed inset-0 z-[80] bg-black/60 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+                    <div class="rounded-3xl w-full max-w-sm p-7 shadow-2xl transform scale-95 transition-transform duration-300"
+                        id="category-modal-content" style="background:#FFFDF8; border:1px solid rgba(255,154,0,0.2);">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-black flex items-center gap-2" style="color:#3D2B00;">
+                                <span class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                    style="background:#FFD93D;"><i data-lucide="layers" class="w-4 h-4"
+                                        style="color:#3D2B00;"></i></span> Master Kategori
+                            </h2>
+                            <button onclick="closeCategoryModal()"
+                                class="w-8 h-8 rounded-xl flex items-center justify-center"
+                                style="background:#FFF0D0; color:#FF9A00;">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="flex gap-2 mb-5">
+                            <input type="text" id="new-category-input" placeholder="Nama Kategori Baru"
+                                class="una-input flex-1">
+                            <button onclick="addCategory()" class="p-3 rounded-xl transition-all shadow-md shrink-0"
+                                style="background:#FF9A00; color:white;"><i data-lucide="plus"
+                                    class="w-5 h-5"></i></button>
+                        </div>
+                        <div class="max-h-60 overflow-y-auto space-y-2 pr-2" id="category-list-container">
+                            <!-- Categories injected here -->
+                        </div>
+                    </div>
+                </div>
+
+        </main>
+    </div>
+
+    <script>
+        const CATEGORIES = ['Pakaian', 'Gamis', 'Dress', 'Atasan', 'Mukenah', 'Tas', 'Sandal', 'Sepatu', 'Make Up', 'Bedak', 'Foundation', 'Sunscreen', 'Lipstick', 'Moisturizer'];
+        const BRANDS = ['Aura Glow', 'Zivana Luxury', 'Modesty Silk', 'Luxe Couture', 'Serenity', 'BeautyLab', 'Wardah Premium', 'Scarlett', 'Somethinc Elite'];
+
+        let state = {
+            categories: [...CATEGORIES],
+            activeTab: 'pos',
+            products: [],
+            cart: [],
+            customerType: 'umum', // 'umum' or 'member'
+            selectedMember: null,
+            members: [
+                { id: 'MEM001', name: 'Siti Aminah', phone: '08123456789', points: 150, joinDate: '15 Okt 2023' },
+                { id: 'MEM002', name: 'Dewi Lestari', phone: '08778899001', points: 45, joinDate: '01 Des 2023' },
+                { id: 'MEM003', name: 'Rani Wijaya', phone: '08134455667', points: 320, joinDate: '12 Jan 2024' }
+            ],
+            transactions: [],
+            transactionAuditLog: [],
+            cashiers: [
+                { id: 'admin', name: 'Super Admin', pass: 'admin' }
+            ],
+            revenue: 0,
+            openingBalance: 0,
+            lastOpeningDate: null,
+            shiftLogs: []
+        };
+
+        function initProducts() {
+            let idCounter = 1;
+            CATEGORIES.forEach(cat => {
+                const itemCount = cat.includes('Gamis') || cat.includes('Dress') ? 80 : 70;
+                for (let i = 1; i <= itemCount; i++) {
+                    const brand = BRANDS[Math.floor(Math.random() * BRANDS.length)];
+                    state.products.push({
+                        id: idCounter++,
+                        name: `${cat} ${brand} #${i}`,
+                        category: cat,
+                        price: Math.floor(Math.random() * (500000 - 35000) + 35000),
+                        stock: Math.floor(Math.random() * 40) + 10,
+                        sku: `UNA-${cat.substring(0, 2).toUpperCase()}-${1000 + i}`
+                    });
+                }
+            });
+        }
+
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const tabEl = document.getElementById(`tab-${tabId}`);
+            if (tabEl) tabEl.classList.add('active');
+
+            document.querySelectorAll('#main-sidebar .nav-btn').forEach(btn => {
+                btn.classList.remove('active-nav');
+            });
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if (activeBtn) activeBtn.classList.add('active-nav');
+
+            if (tabId === 'dashboard') renderDashboard();
+            if (tabId === 'inventory') renderInventory();
+            if (tabId === 'members') renderMembers();
+            if (tabId === 'history') renderHistory();
+            if (tabId === 'shifthistory') renderShiftLogs();
+            if (tabId === 'cashier') renderCashiers();
+            if (tabId === 'stock-history') renderStockHistory();
+            lucide.createIcons();
+        }
+
+        function renderDashboard() {
+            // Stats
+            let todayRevenue = state.revenue || 0;
+            let todayTrx = state.transactions.length;
+            let lowStockCount = state.products.filter(p => p.stock < 10).length;
+            let memberCount = state.members.length;
+
+            document.getElementById('dash-revenue').innerText = formatIDR(todayRevenue);
+            document.getElementById('dash-trx-count').innerText = todayTrx;
+            document.getElementById('dash-low-stock').innerText = lowStockCount;
+            document.getElementById('dash-members').innerText = memberCount;
+
+            // Top Products
+            const sales = {};
+            state.transactions.forEach(t => {
+                t.items.forEach(item => {
+                    sales[item.name] = (sales[item.name] || 0) + item.quantity;
+                });
+            });
+
+            const topProducts = Object.entries(sales)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            const container = document.getElementById('dash-top-products');
+            if (topProducts.length === 0) {
+                container.innerHTML = '<p class="text-sm italic text-center py-10 opacity-50" style="color:#C06800;">Belum ada data penjualan tersedia</p>';
+            } else {
+                container.innerHTML = topProducts.map(([name, qty], index) => {
+                    const isTop = index === 0;
+                    return `
+                        <div class="flex items-center justify-between p-4 rounded-2xl border transition-all hover:scale-[1.01]" style="background:${isTop ? '#FFF4DC' : '#FFFDF8'}; border-color:${isTop ? '#FFD93D' : 'rgba(255,154,0,0.1)'};">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs shadow-sm" style="background:${isTop ? '#FF9A00' : '#F6F1E9'}; color:${isTop ? 'white' : '#A05C00'};">#${index + 1}</div>
+                                <div>
+                                    <h4 class="font-black text-sm truncate w-32 md:w-auto" style="color:#1C1A16;">${name}</h4>
+                                    <p class="text-[9px] font-bold uppercase tracking-widest mt-0.5" style="color:#A05C00;">${isTop ? 'Produk Terlaris ✨' : 'Populer'} </p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tighter shadow-sm" style="background:${isTop ? '#FF9A00' : '#FFFDF8'}; border:1px solid ${isTop ? '#FF9A00' : '#FFD93D'}; color:${isTop ? 'white' : '#A05C00'};">${qty} Terjual</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            lucide.createIcons();
+        }
+
+        let editingCashierId = null;
+
+        function renderCashiers() {
+            const list = state.cashiers || [{ id: 'admin', name: 'Super Admin', pass: 'admin', joinDate: '15 Mei 2024' }];
+            const cashierSel = document.getElementById('active-cashier-select');
+            if (cashierSel) {
+                const prevVal = cashierSel.value;
+                cashierSel.innerHTML = '';
+                list.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.innerText = c.name;
+                    cashierSel.appendChild(opt);
+                });
+                if (prevVal && list.find(c => c.id === prevVal)) cashierSel.value = prevVal;
+            }
+
+            const tbody = document.getElementById('cashier-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            list.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50/50 transition-colors";
+
+                const joinDateText = c.joinDate || new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                tr.innerHTML = `
+                    <td class="p-5 font-black" style="color:#1C1A16;">${c.id}</td>
+                    <td class="p-5 font-bold" style="color:#3D2B00;">${c.name}</td>
+                    <td class="p-5 text-center text-xs font-bold" style="color:#A05C00;">${joinDateText}</td>
+                    <td class="p-5 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <span class="text-[10px] px-2 py-1 rounded-full flex gap-1 items-center font-black absolute hidden lg:static lg:flex" style="background:#FFF4DC; color:#16A34A;"><i data-lucide="shield-check" class="w-3 h-3"></i> Aktif</span>
+                            <button onclick="openAddCashierModal('${c.id}')" class="p-2 rounded-lg transition-all" style="background:#FFF0D0; color:#FF9A00;" title="Edit Akun"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            ${c.id !== 'admin' ? `<button onclick="deleteCashier('${c.id}')" class="p-2 rounded-lg transition-all" style="background:#FFF0F0; color:#EF4444;" title="Hapus Akun"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : `<div class="w-8"></div>`}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function deleteCashier(id) {
+            if (id === 'admin') return showNotification('Akun admin utama tidak bisa dihapus!', 'error');
+            const conf = confirm(`Anda yakin ingin menghapus akses kasir dengan ID: ${id}?`);
+            if (!conf) return;
+
+            state.cashiers = state.cashiers.filter(c => c.id !== id);
+            saveState();
+            renderCashiers();
+            showNotification('Akses kasir berhasil dihapus.');
+        }
+
+        function openAddCashierModal(editId = null) {
+            editingCashierId = editId;
+            const m = document.getElementById('add-cashier-modal');
+            const c = document.getElementById('add-cashier-modal-content');
+            const title = document.getElementById('modal-cashier-title');
+            const btnText = document.getElementById('modal-cashier-btn-text');
+            const idInput = document.getElementById('new-cashier-id');
+
+            if (editId && typeof editId === 'string') {
+                const user = state.cashiers.find(u => u.id === editId);
+                if (user) {
+                    document.getElementById('new-cashier-name').value = user.name;
+                    idInput.value = user.id;
+                    idInput.disabled = true;
+                    document.getElementById('new-cashier-pass').value = user.pass;
+                    if (title) title.innerHTML = '<i data-lucide="user-cog" class="w-5 h-5 text-indigo-500"></i> Edit Kasir';
+                    if (btnText) btnText.innerText = 'Perbarui Akses';
+                }
+            } else {
+                document.getElementById('new-cashier-name').value = '';
+                idInput.value = '';
+                idInput.disabled = false;
+                document.getElementById('new-cashier-pass').value = '';
+                if (title) title.innerHTML = '<i data-lucide="user-plus" class="w-5 h-5 text-indigo-500"></i> Kasir Baru';
+                if (btnText) btnText.innerText = 'Simpan Akses';
+            }
+
+            m.classList.remove('hidden');
+            void m.offsetWidth;
+            m.classList.remove('opacity-0');
+            c.classList.remove('scale-95');
+            lucide.createIcons();
+        }
+
+        function closeAddCashierModal() {
+            const m = document.getElementById('add-cashier-modal');
+            const c = document.getElementById('add-cashier-modal-content');
+            m.classList.add('opacity-0');
+            c.classList.add('scale-95');
+            setTimeout(() => m.classList.add('hidden'), 300);
+            editingCashierId = null;
+        }
+
+        function saveNewCashier() {
+            const name = document.getElementById('new-cashier-name').value;
+            const id = document.getElementById('new-cashier-id').value.trim();
+            const pass = document.getElementById('new-cashier-pass').value;
+
+            if (!name || !id || !pass) return showNotification('Semua kolom wajib diisi!', 'error');
+
+            if (!state.cashiers) state.cashiers = [{ id: 'admin', name: 'Super Admin', pass: 'admin', joinDate: '15 Mei 2024' }];
+
+            if (editingCashierId) {
+                const idx = state.cashiers.findIndex(c => c.id === editingCashierId);
+                if (idx > -1) {
+                    state.cashiers[idx].name = name;
+                    state.cashiers[idx].pass = pass;
+                    showNotification('Akses Kasir berhasil diperbarui!');
+                }
+            } else {
+                if (state.cashiers.find(c => c.id === id)) return showNotification('ID Kasir sudah terdaftar!', 'error');
+                const joinDate = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                state.cashiers.push({ id, name, pass, joinDate });
+                showNotification('Akses Kasir baru berhasil ditambahkan!');
+            }
+
+            saveState();
+            closeAddCashierModal();
+            renderCashiers();
+        }
+
+        function renderCategoryOptions() {
+            const catSel = document.getElementById('inventory-category');
+            const newProdCatSel = document.getElementById('new-prod-category');
+            const posCatSel = document.getElementById('pos-category');
+            if (catSel) catSel.innerHTML = '<option value="Semua">Semua Kategori</option>';
+            if (newProdCatSel) newProdCatSel.innerHTML = '';
+            if (posCatSel) posCatSel.innerHTML = '<option value="Semua">Semua Kategori</option>';
+
+            const cats = state.categories || [...CATEGORIES];
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.innerText = c;
+                if (catSel) catSel.appendChild(opt.cloneNode(true));
+                if (newProdCatSel) newProdCatSel.appendChild(opt.cloneNode(true));
+                if (posCatSel) posCatSel.appendChild(opt.cloneNode(true));
+            });
+        }
+
+        function renderCategoryList() {
+            const listContainer = document.getElementById('category-list-container');
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+            const cats = state.categories || [...CATEGORIES];
+
+            cats.forEach(c => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-gray-50 p-3 rounded-xl";
+                div.innerHTML = `
+                    <span class="font-bold text-slate-700 text-sm">${c}</span>
+                    <button onclick="deleteCategory('${c}')" class="text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                `;
+                listContainer.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function openCategoryModal() {
+            document.getElementById('new-category-input').value = '';
+            renderCategoryList();
+            const m = document.getElementById('category-modal');
+            const c = document.getElementById('category-modal-content');
+            m.classList.remove('hidden');
+            void m.offsetWidth;
+            m.classList.remove('opacity-0');
+            c.classList.remove('scale-95');
+        }
+
+        function closeCategoryModal() {
+            const m = document.getElementById('category-modal');
+            const c = document.getElementById('category-modal-content');
+            m.classList.add('opacity-0');
+            c.classList.add('scale-95');
+            setTimeout(() => m.classList.add('hidden'), 300);
+        }
+
+        function addCategory() {
+            const val = document.getElementById('new-category-input').value.trim();
+            if (!val) return showNotification('Nama kategori wajib diisi!', 'error');
+
+            if (!state.categories) state.categories = [...CATEGORIES];
+            if (state.categories.includes(val)) return showNotification('Kategori sudah ada!', 'error');
+
+            state.categories.push(val);
+            saveState();
+            renderCategoryList();
+            renderCategoryOptions();
+            document.getElementById('new-category-input').value = '';
+            showNotification('Kategori berhasil ditambahkan!');
+        }
+
+        function deleteCategory(catName) {
+            const count = state.products.filter(p => p.category === catName).length;
+            if (count > 0) return showNotification(`Terdapat ${count} produk dengan kategori ini. Hapus produk terlebih dahulu!`, 'error');
+
+            state.categories = state.categories.filter(c => c !== catName);
+            saveState();
+            renderCategoryList();
+            renderCategoryOptions();
+            showNotification('Kategori dihapus!');
+        }
+
+        let notificationTimeout;
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            const msgEl = document.getElementById('notif-message');
+            const iconEl = document.getElementById('notif-icon');
+
+            msgEl.innerText = message;
+
+            if (type === 'success') {
+                iconEl.innerHTML = '<i data-lucide="check-circle-2"></i>';
+                iconEl.className = 'text-[#16A34A]';
+            } else {
+                iconEl.innerHTML = '<i data-lucide="alert-circle"></i>';
+                iconEl.className = 'text-[#EF4444]';
+            }
+            lucide.createIcons();
+
+            notif.classList.remove('translate-x-full', 'opacity-0');
+            notif.classList.add('translate-x-0', 'opacity-100');
+
+            if (notificationTimeout) clearTimeout(notificationTimeout);
+            notificationTimeout = setTimeout(() => {
+                notif.classList.remove('translate-x-0', 'opacity-100');
+                notif.classList.add('translate-x-full', 'opacity-0');
+            }, 3000);
+        }
+
+        function renderPOS() {
+            const container = document.getElementById('product-grid');
+            const searchTerm = document.getElementById('pos-search').value.toLowerCase();
+            const categoryFilter = document.getElementById('pos-category').value;
+
+            container.innerHTML = '';
+
+            const filtered = state.products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchTerm) || p.sku.toLowerCase().includes(searchTerm);
+                const matchesCat = !categoryFilter || categoryFilter === 'Semua' || p.category.toLowerCase().includes(categoryFilter.toLowerCase());
+                return matchesSearch && matchesCat;
+            });
+
+            // Limit display to 50 for performance
+            filtered.slice(0, 50).forEach(product => {
+                const discount = product.discount || 0;
+                const finalPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
+                const tagHTML = discount > 0 ? '<div class="absolute top-2 left-2 text-white text-[9px] font-black px-2 py-1 rounded-lg shadow-sm" style="background:#FF9A00;">-' + discount + '%</div>' : '';
+                const stripHTML = discount > 0 ? '<span class="line-through text-gray-400 text-[10px] font-medium leading-none">' + formatIDR(product.price) + '</span>' : '';
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-3xl border border-transparent shadow-sm hover:shadow-md cursor-pointer transition-all group relative animate-pop";
+                card.style.border = "1px solid rgba(255,154,0,0.1)";
+                card.onclick = () => addToCart(product);
+                card.innerHTML = `
+                    <div class="h-32 rounded-2xl mb-4 flex items-center justify-center text-gray-200 transition-colors relative" style="background:#F6F1E9;">
+                        <i data-lucide="box" class="w-10 h-10 opacity-20"></i>
+                        ${tagHTML}
+                    </div>
+                    <span class="text-[9px] font-black uppercase tracking-widest" style="color:#A05C00;">${product.category}</span>
+                    <h3 class="font-black text-xs truncate mt-1" style="color:#1C1A16;">${product.name}</h3>
+                    <div class="flex justify-between flex-wrap gap-2 items-end mt-2">
+                        <div class="flex flex-col">
+                            ${stripHTML}
+                            <span class="font-black text-sm mt-0.5" style="color:#FF9A00;">${formatIDR(finalPrice)}</span>
+                        </div>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full font-bold" style="background:${product.stock < 10 ? '#FFF0F0' : '#FFF4DC'}; color:${product.stock < 10 ? '#EF4444' : '#16A34A'};">
+                            Stok: ${product.stock}
+                        </span>
+                    </div>
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <div class="text-white p-2 rounded-xl shadow-lg" style="background:#FF9A00;">
+                            <i data-lucide="plus" class="w-3 h-3"></i>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function addToCart(product) {
+            if (product.stock <= 0) return showNotification('Stok Habis!', 'error');
+
+            const existing = state.cart.find(item => item.id === product.id);
+            if (existing) {
+                if (existing.quantity >= product.stock) return showNotification('Stok Maksimal!', 'error');
+                existing.quantity++;
+            } else {
+                state.cart.push({ ...product, quantity: 1 });
+            }
+            updateCartUI();
+        }
+
+        function updateCartQuantity(id, delta) {
+            const item = state.cart.find(i => i.id === id);
+            const product = state.products.find(p => p.id === id);
+
+            if (item) {
+                const newQty = item.quantity + delta;
+                if (newQty > product.stock) return showNotification('Melebihi Stok!', 'error');
+                if (newQty > 0) {
+                    item.quantity = newQty;
+                } else {
+                    state.cart = state.cart.filter(i => i.id !== id);
+                }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+
+            if (state.cart.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-center p-10 opacity-20">
+                        <i data-lucide="shopping-bag" class="w-16 h-16 mb-4"></i>
+                        <p class="text-xs font-bold">Keranjang Kosong</p>
+                    </div>
+                `;
+            } else {
+                state.cart.forEach(item => {
+                    const discount = item.discount || 0;
+                    const finalPrice = discount > 0 ? item.price * (1 - discount / 100) : item.price;
+                    const stripHTML = discount > 0 ? '<p class="text-[9px] text-gray-400 line-through">' + formatIDR(item.price) + '</p>' : '';
+
+                    const el = document.createElement('div');
+                    el.className = "flex gap-3 p-3 rounded-2xl transition-all relative";
+                    el.style.background = "#FFF8EE";
+                    el.style.border = "1px solid rgba(255,154,0,0.1)";
+                    el.innerHTML = `
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-xs font-black truncate pr-2" style="color:#1C1A16;">${item.name}</h4>
+                            <div class="flex items-center gap-1 mt-0.5">
+                                <p class="text-[10px] font-black" style="color:#FF9A00;">${formatIDR(finalPrice)}</p>
+                                ${stripHTML}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="updateCartQuantity(${item.id}, -1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-400 hover:text-[#FF9A00]"><i data-lucide="minus" class="w-3 h-3"></i></button>
+                            <span class="text-xs font-black w-4 text-center" style="color:#3D2B00;">${item.quantity}</span>
+                            <button onclick="updateCartQuantity(${item.id}, 1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-400 hover:text-[#FF9A00]"><i data-lucide="plus" class="w-3 h-3"></i></button>
+                        </div>
+                    `;
+                    container.appendChild(el);
+                });
+            }
+
+            calculateTotals();
+            lucide.createIcons();
+        }
+
+        function calculateTotals() {
+            const subtotal = state.cart.reduce((sum, i) => {
+                const discountAmount = i.discount || 0;
+                const finalPrice = discountAmount > 0 ? i.price * (1 - discountAmount / 100) : i.price;
+                return sum + (finalPrice * i.quantity);
+            }, 0);
+
+            const discount = (state.customerType === 'member' && state.selectedMember) ? subtotal * 0.1 : 0;
+            const subAfterMember = subtotal - discount;
+
+            const voucherInput = parseInt(document.getElementById('voucher-input').value) || 0;
+            const voucherDiscount = Math.min(voucherInput, subAfterMember);
+
+            const subAfterVoucher = subAfterMember - voucherDiscount;
+            const tax = subAfterVoucher * 0.11;
+            const total = subAfterVoucher + tax;
+
+            document.getElementById('cart-subtotal').innerText = formatIDR(subtotal);
+            document.getElementById('cart-discount').innerText = '-' + formatIDR(discount);
+            document.getElementById('cart-voucher').innerText = '-' + formatIDR(voucherDiscount);
+            document.getElementById('cart-tax').innerText = formatIDR(tax);
+            document.getElementById('cart-total').innerText = formatIDR(total);
+
+            const btn = document.getElementById('btn-checkout');
+            const discRow = document.getElementById('discount-row');
+            const voucherRow = document.getElementById('voucher-row');
+
+            if (discount > 0) discRow.classList.remove('hidden');
+            else discRow.classList.add('hidden');
+
+            if (voucherDiscount > 0) voucherRow.classList.remove('hidden');
+            else voucherRow.classList.add('hidden');
+
+            if (state.cart.length > 0) {
+                btn.disabled = false;
+                btn.classList.remove('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
+                btn.classList.add('bg-slate-900', 'text-white', 'hover:bg-slate-800', 'active:scale-95');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
+                btn.classList.remove('bg-slate-900', 'text-white', 'hover:bg-slate-800');
+            }
+        }
+
+        function setCustomerType(type) {
+            state.customerType = type;
+            const btnUmum = document.getElementById('type-umum');
+            const btnMember = document.getElementById('type-member');
+            const memberSel = document.getElementById('member-selector');
+            const umumInfo = document.getElementById('umum-info');
+
+            if (type === 'umum') {
+                btnUmum.className = "flex-1 py-2 text-[10px] font-black rounded-lg transition-all shadow-sm";
+                btnUmum.style.background = "#FF9A00";
+                btnUmum.style.color = "white";
+                btnMember.className = "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all";
+                btnMember.style.color = "#A05C00";
+                memberSel.classList.add('hidden');
+                umumInfo.classList.remove('hidden');
+                state.selectedMember = null;
+            } else {
+                btnMember.className = "flex-1 py-2 text-[10px] font-black rounded-lg transition-all shadow-sm";
+                btnMember.style.background = "#FF9A00";
+                btnMember.style.color = "white";
+                btnUmum.className = "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all";
+                btnUmum.style.color = "#A05C00";
+                memberSel.classList.remove('hidden');
+                umumInfo.classList.add('hidden');
+            }
+            updateCartUI();
+        }
+
+        function handleMemberSelect(e) {
+            const memberStr = e.target.value;
+            const badge = document.getElementById('selected-member-badge');
+
+            if (memberStr) {
+                state.selectedMember = state.members.find(m => `${m.name} (${m.phone})` === memberStr);
+                if (state.selectedMember) {
+                    document.getElementById('member-initial').innerText = state.selectedMember.name.charAt(0);
+                    document.getElementById('member-name-display').innerText = state.selectedMember.name;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            } else {
+                state.selectedMember = null;
+                badge.classList.add('hidden');
+            }
+            calculateTotals();
+        }
+
+        function openPaymentModal() {
+            if (state.customerType === 'member' && !state.selectedMember) {
+                return showNotification('Pilih member terlebih dahulu!', 'error');
+            }
+            if (state.cart.length === 0) return;
+
+            const totalDisplay = document.getElementById('cart-total').innerText;
+            document.getElementById('payment-total-display').innerText = totalDisplay;
+
+            const modal = document.getElementById('payment-modal');
+            const content = document.getElementById('payment-modal-content');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closePaymentModal() {
+            const modal = document.getElementById('payment-modal');
+            const content = document.getElementById('payment-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function processPayment(method) {
+            closePaymentModal();
+
+            const subtotal = state.cart.reduce((sum, i) => {
+                const discountAmount = i.discount || 0;
+                const finalPrice = discountAmount > 0 ? i.price * (1 - discountAmount / 100) : i.price;
+                return sum + (finalPrice * i.quantity);
+            }, 0);
+
+            const discount = (state.customerType === 'member' && state.selectedMember) ? subtotal * 0.1 : 0;
+            const voucherInput = parseInt(document.getElementById('voucher-input').value) || 0;
+            const voucherDiscount = Math.min(voucherInput, subtotal - discount);
+            const tax = (subtotal - discount - voucherDiscount) * 0.11;
+            const total = (subtotal - discount - voucherDiscount) + tax;
+
+            let cashierName = 'Admin';
+            const cashierSel = document.getElementById('active-cashier-select');
+            if (cashierSel && cashierSel.value) cashierName = cashierSel.options[cashierSel.selectedIndex].text;
+
+            const trx = {
+                id: `TRX-${Date.now()}`,
+                date: new Date().toLocaleString('id-ID'),
+                method: method,
+                items: [...state.cart],
+                subtotal: subtotal,
+                memberDiscount: discount,
+                voucherDiscount: voucherDiscount,
+                tax: tax,
+                total: total,
+                customer: state.customerType === 'member' ? state.selectedMember.name : 'Umum',
+                cashier: cashierName
+            };
+
+            // Update Stock
+            state.cart.forEach(item => {
+                const prod = state.products.find(p => p.id === item.id);
+                if (prod) prod.stock -= item.quantity;
+            });
+
+            state.transactions.unshift(trx);
+            state.revenue += total;
+            document.getElementById('daily-revenue').innerText = formatIDR(state.revenue);
+
+            showNotification('Transaksi Berhasil!');
+            clearCart();
+            renderPOS();
+            saveState();
+        }
+
+        function clearCart() {
+            state.cart = [];
+            setCustomerType('umum');
+            document.getElementById('member-dropdown').value = "";
+            document.getElementById('voucher-input').value = "";
+            document.getElementById('selected-member-badge').classList.add('hidden');
+            updateCartUI();
+        }
+
+        function renderInventory() {
+            const tbody = document.getElementById('inventory-table-body');
+            const searchInput = document.getElementById('inventory-search');
+            const catInput = document.getElementById('inventory-category');
+            const statusInput = document.getElementById('inventory-status-filter');
+
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const categoryFilter = catInput ? catInput.value : '';
+            const statusFilter = statusInput ? statusInput.value : '';
+
+            tbody.innerHTML = '';
+
+            const filtered = state.products.filter(p => {
+                const matchesSearch = !searchTerm || p.name.toLowerCase().includes(searchTerm) || p.sku.toLowerCase().includes(searchTerm);
+                const matchesCat = !categoryFilter || categoryFilter === 'Semua' || p.category.toLowerCase().includes(categoryFilter.toLowerCase());
+
+                let matchesStatus = true;
+                if (statusFilter === 'tersedia') matchesStatus = p.stock >= 10;
+                if (statusFilter === 'hampir_habis') matchesStatus = p.stock > 0 && p.stock < 10;
+                if (statusFilter === 'habis_terjual') matchesStatus = p.stock <= 0;
+
+                return matchesSearch && matchesCat && matchesStatus;
+            });
+
+            filtered.slice(0, 50).forEach(p => {
+                const discountAmount = p.discount || 0;
+                const priceDisplay = discountAmount > 0
+                    ? `<span class="line-through text-gray-400 text-[10px] block">${formatIDR(p.price)}</span> ${formatIDR(p.price * (1 - discountAmount / 100))} <span class="text-[9px] font-bold px-1 rounded ml-1" style="background:#FFF0D0; color:#FF9A00;">-${discountAmount}%</span>`
+                    : formatIDR(p.price);
+
+                const row = document.createElement('tr');
+                row.className = "hover:bg-gray-50/50 transition-colors";
+                row.innerHTML = `
+                    <td class="p-5">
+                        <p class="font-black" style="color:#1C1A16;">${p.name}</p>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${p.sku}</p>
+                        ${p.lastEditedBy ? `<p class="text-[9px] mt-1" style="color:#A05C00;"><i data-lucide="edit-3" class="w-2.5 h-2.5 inline"></i> ${p.lastEditedBy.toUpperCase()} - ${p.lastEditedAt}</p>` : ''}
+                    </td>
+                    <td class="p-5"><span class="text-[10px] px-2 py-1 rounded-md uppercase font-black" style="background:#FFF4DC; color:#A05C00;">${p.category}</span></td>
+                    <td class="p-5 text-right font-black" style="color:#3D2B00;">${priceDisplay}</td>
+                    <td class="p-5 text-center font-black ${p.stock <= 0 ? 'text-[#EF4444]' : (p.stock < 10 ? 'text-[#F59E0B]' : 'text-[#3D2B00]')}">${p.stock}</td>
+                    <td class="p-5">
+                        ${p.stock <= 0 ?
+                        '<span class="text-[10px] px-2 py-1 rounded-full font-black" style="background:#FFF0F0; color:#EF4444;">Habis</span>' :
+                        p.stock < 10 ?
+                            '<span class="text-[10px] px-2 py-1 rounded-full font-black" style="background:#FFF4DC; color:#F59E0B;">Menipis</span>' :
+                            '<span class="text-[10px] px-2 py-1 rounded-full font-black" style="background:#F0FDF4; color:#16A34A;">Tersedia</span>'}
+                    </td>
+                    <td class="p-5 text-center flex justify-center gap-1">
+                        <button onclick="openStockModal(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.stock})" class="p-2 rounded-lg transition-all" style="background:#FFF0D0; color:#FF9A00;" title="Edit Stok">
+                            <i data-lucide="package" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="openDiscountModal(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${discountAmount})" class="p-2 rounded-lg transition-all" style="background:#FFF8EE; color:#A05C00;" title="Set Diskon">
+                            <i data-lucide="tag" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderMembers() {
+            const list = document.getElementById('member-list');
+            document.getElementById('member-count').innerText = state.members.length;
+            list.innerHTML = '';
+            state.members.forEach(m => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-3xl border flex items-center justify-between shadow-sm animate-pop";
+                card.style.borderColor = "rgba(255,154,0,0.1)";
+                card.innerHTML = `
+                    <div class="flex items-center gap-5">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl" style="background:#FF9A00; color:white;">${m.name.charAt(0)}</div>
+                        <div>
+                            <h4 class="font-black" style="color:#1C1A16;">${m.name}</h4>
+                            <p class="text-sm font-bold" style="color:#A05C00;">${m.phone}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold uppercase tracking-widest mb-1" style="color:#A05C0066;">Loyalty Points</p>
+                        <p class="text-2xl font-black" style="color:#FF9A00;">${m.points}</p>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            const empty = document.getElementById('empty-history');
+
+            if (state.transactions.length === 0) {
+                empty.style.display = 'block';
+                container.innerHTML = '';
+                return;
+            }
+
+            empty.style.display = 'none';
+            container.innerHTML = '';
+            state.transactions.forEach(t => {
+                const el = document.createElement('div');
+                el.className = "bg-white p-5 rounded-3xl border flex flex-col md:flex-row justify-between items-center gap-4 animate-pop";
+                el.style.borderColor = "rgba(255,154,0,0.1)";
+                el.innerHTML = `
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <div class="p-3 rounded-2xl" style="background:#F0FDF4; color:#16A34A;"><i data-lucide="check-circle-2"></i></div>
+                        <div>
+                            <h4 class="font-black text-sm" style="color:#1C1A16;">${t.id}</h4>
+                            <p class="text-[10px] font-bold uppercase tracking-tight" style="color:#A05C00;">${t.date} • <span style="color:#FF9A00;">${t.customer}</span> • Kasir: ${t.cashier || 'Admin'}</p>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex flex-wrap gap-2 justify-center px-4">
+                        ${t.items.map(i => `<span class="text-[9px] px-2 py-0.5 rounded-lg font-bold" style="background:#F6F1E9; border:1px solid rgba(255,154,0,0.1); color:#A05C00;">${i.quantity}x ${i.name}</span>`).join('')}
+                    </div>
+                    <div class="text-right w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-gray-50 pr-0 md:pr-4">
+                        <p class="text-[10px] font-bold uppercase mb-1" style="color:#A05C0066;">Total Transaksi</p>
+                        <p class="text-lg font-black" style="color:#1C1A16;">${formatIDR(t.total)}</p>
+                    </div>
+                    <div class="flex flex-row md:flex-col gap-2 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-gray-50 pl-0 md:pl-4 md:border-l">
+                        <button onclick="requestAuth('edit', '${t.id}')" class="flex-1 text-[10px] font-black px-3 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 whitespace-nowrap" style="background:#FFF4DC; color:#A05C00;"><i data-lucide="edit-3" class="w-3 h-3"></i> Edit</button>
+                        <button onclick="requestAuth('delete', '${t.id}')" class="flex-1 text-[10px] font-black px-3 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 whitespace-nowrap" style="background:#FFF0F0; color:#EF4444;"><i data-lucide="trash-2" class="w-3 h-3"></i> Hapus</button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+            lucide.createIcons();
+        }
+
+        let pendingAction = null;
+        let pendingTargetId = null;
+
+        function requestAuth(action, id) {
+            pendingAction = action;
+            pendingTargetId = id;
+            document.getElementById('auth-id').value = '';
+            document.getElementById('auth-pass').value = '';
+
+            const modal = document.getElementById('auth-modal');
+            const content = document.getElementById('auth-modal-content');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            const content = document.getElementById('auth-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+            pendingAction = null;
+            pendingTargetId = null;
+        }
+
+        function verifyAuth() {
+            const id = document.getElementById('auth-id').value;
+            const pass = document.getElementById('auth-pass').value;
+
+            const list = state.cashiers || [{ id: 'admin', name: 'Super Admin', pass: 'admin' }];
+            const user = list.find(c => c.id === id && c.pass === pass);
+
+            if (user) {
+                const action = pendingAction;
+                const targetId = pendingTargetId;
+                closeAuthModal();
+                if (action === 'delete') {
+                    deleteTransaction(targetId);
+                } else if (action === 'edit') {
+                    editTransaction(targetId);
+                }
+            } else {
+                showNotification('ID Kasir atau Password Salah!', 'error');
+            }
+        }
+
+        function deleteTransaction(id) {
+            const index = state.transactions.findIndex(t => t.id === id);
+            if (index === -1) return;
+            const trx = state.transactions[index];
+
+            state.revenue -= trx.total;
+            if (state.revenue < 0) state.revenue = 0;
+
+            trx.items.forEach(item => {
+                const p = state.products.find(prod => prod.id === item.id);
+                if (p) p.stock += item.quantity;
+            });
+
+            // Log Audit
+            if (!state.transactionAuditLog) state.transactionAuditLog = [];
+            state.transactionAuditLog.unshift({
+                id: `AUD-${Date.now()}`,
+                type: 'HAPUS',
+                trxId: trx.id,
+                date: new Date().toLocaleString('id-ID'),
+                cashier: 'Admin',
+                total: trx.total
+            });
+
+            state.transactions.splice(index, 1);
+            showNotification('Transaksi berhasil dihapus via Otorisasi Kasir');
+
+            document.getElementById('daily-revenue').innerText = formatIDR(state.revenue);
+            saveState();
+            renderHistory();
+            renderInventory();
+        }
+
+        function editTransaction(id) {
+            const trx = state.transactions.find(t => t.id === id);
+            if (!trx) return;
+
+            document.getElementById('edit-pay-trx-id').value = id;
+            document.getElementById('edit-pay-trx-info').innerText = `ID: ${id} • Total: ${formatIDR(trx.total)}`;
+            document.getElementById('edit-pay-method').value = trx.paymentMethod || 'Tunai';
+
+            const modal = document.getElementById('edit-payment-modal');
+            const content = document.getElementById('edit-payment-modal-content');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+            lucide.createIcons();
+        }
+
+        function closeEditPaymentModal() {
+            const modal = document.getElementById('edit-payment-modal');
+            const content = document.getElementById('edit-payment-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function updatePaymentMethod() {
+            const id = document.getElementById('edit-pay-trx-id').value;
+            const newMethod = document.getElementById('edit-pay-method').value;
+
+            const trx = state.transactions.find(t => t.id === id);
+            if (!trx) return;
+
+            const oldMethod = trx.paymentMethod || 'Tunai';
+            if (oldMethod === newMethod) {
+                closeEditPaymentModal();
+                return;
+            }
+
+            // Log Audit
+            if (!state.transactionAuditLog) state.transactionAuditLog = [];
+            state.transactionAuditLog.unshift({
+                id: `AUD-${Date.now()}`,
+                type: 'EDIT_PAYMENT',
+                trxId: id,
+                date: new Date().toLocaleString('id-ID'),
+                cashier: 'Admin',
+                total: trx.total,
+                note: `${oldMethod} -> ${newMethod}`
+            });
+
+            trx.paymentMethod = newMethod;
+            showNotification(`Metode pembayaran berhasil diubah ke ${newMethod}`);
+            closeEditPaymentModal();
+            renderHistory();
+            saveState();
+        }
+
+        function openAddProductModal() {
+            const modal = document.getElementById('add-product-modal');
+            const content = document.getElementById('add-product-modal-content');
+
+            // Reset fields
+            document.getElementById('new-prod-name').value = '';
+            document.getElementById('new-prod-category').value = CATEGORIES[0];
+            document.getElementById('new-prod-stock').value = '';
+            document.getElementById('new-prod-price').value = '';
+
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeAddProductModal() {
+            const modal = document.getElementById('add-product-modal');
+            const content = document.getElementById('add-product-modal-content');
+
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function saveNewProduct() {
+            const name = document.getElementById('new-prod-name').value;
+            const category = document.getElementById('new-prod-category').value;
+            const stock = parseInt(document.getElementById('new-prod-stock').value) || 0;
+            const price = parseInt(document.getElementById('new-prod-price').value) || 0;
+
+            if (!name) return showNotification('Nama produk wajib diisi!', 'error');
+            if (price <= 0) return showNotification('Harga tidak valid!', 'error');
+
+            const newId = state.products.length > 0 ? Math.max(...state.products.map(p => p.id)) + 1 : 1;
+            const sku = `UNA-${category.substring(0, 2).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+
+            const newProd = {
+                id: newId,
+                name,
+                category,
+                price,
+                stock,
+                sku
+            };
+
+            state.products.unshift(newProd); // Add to beginning
+
+            showNotification('Produk berhasil ditambahkan!');
+            closeAddProductModal();
+            renderInventory();
+            renderPOS();
+            saveState();
+        }
+
+        function openStockModal(id, name, currentStock) {
+            const modal = document.getElementById('stock-modal');
+            const content = document.getElementById('stock-modal-content');
+
+            document.getElementById('stock-prod-id').value = id;
+            document.getElementById('stock-prod-name').innerText = name;
+            document.getElementById('stock-prod-value').value = currentStock || 0;
+            const authIdInput = document.getElementById('stock-auth-id');
+            const authPassInput = document.getElementById('stock-auth-pass');
+            if (authIdInput) authIdInput.value = '';
+            if (authPassInput) authPassInput.value = '';
+            const noteInput = document.getElementById('stock-note');
+            if (noteInput) noteInput.value = '';
+
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeStockModal() {
+            const modal = document.getElementById('stock-modal');
+            const content = document.getElementById('stock-modal-content');
+
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function saveStock() {
+            const id = parseInt(document.getElementById('stock-prod-id').value);
+            const stock = parseInt(document.getElementById('stock-prod-value').value);
+            const authId = document.getElementById('stock-auth-id').value;
+            const authPass = document.getElementById('stock-auth-pass').value;
+
+            if (isNaN(stock) || stock < 0) return showNotification('Stok tidak valid!', 'error');
+            if (!authId || !authPass) return showNotification('Akses ditolak: Masukkan kredensial kasir!', 'error');
+
+            const list = state.cashiers || [{ id: 'admin', name: 'Super Admin', pass: 'admin' }];
+            const user = list.find(c => c.id === authId && c.pass === authPass);
+
+            if (!user) return showNotification('Otorisasi Gagal: ID atau Password Salah!', 'error');
+
+            const product = state.products.find(p => p.id === id);
+            if (product) {
+                const diff = stock - product.stock;
+                if (!state.stockHistory) state.stockHistory = [];
+                state.stockHistory.unshift({
+                    id: `STK-${Date.now()}`,
+                    date: new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                    productName: product.name,
+                    sku: product.sku,
+                    oldStock: product.stock,
+                    newStock: stock,
+                    diff: diff,
+                    cashier: user.name,
+                    note: document.getElementById('stock-note').value || '-'
+                });
+
+                product.stock = stock;
+                product.lastEditedBy = user.name;
+                product.lastEditedAt = new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                showNotification('Stok produk berhasil diperbarui!');
+                saveState();
+                closeStockModal();
+                renderInventory();
+                renderPOS();
+            }
+        }
+
+        function renderStockHistory() {
+            const listContainer = document.getElementById('stock-history-list'); // Modal container (legacy)
+            const tabContainer = document.getElementById('stock-history-list-tab'); // New Tab container
+            const emptyStateModal = document.getElementById('empty-stock-history');
+            const emptyStateTab = document.getElementById('empty-stock-history-tab');
+
+            const history = state.stockHistory || [];
+
+            // Handle Tab View
+            if (tabContainer) {
+                if (history.length === 0) {
+                    tabContainer.innerHTML = '';
+                    if (emptyStateTab) emptyStateTab.classList.remove('hidden');
+                } else {
+                    if (emptyStateTab) emptyStateTab.classList.add('hidden');
+                    tabContainer.innerHTML = '';
+                    history.forEach(h => {
+                        const card = document.createElement('div');
+                        card.className = "bg-white p-6 rounded-3xl border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 animate-pop shadow-sm hover:shadow-md transition-all";
+                        const diffColor = h.diff > 0 ? 'text-green-500 bg-green-50' : (h.diff < 0 ? 'text-red-500 bg-red-50' : 'text-gray-500 bg-gray-200');
+                        const diffSign = h.diff > 0 ? '+' : '';
+
+                        card.innerHTML = `
+                            <div class="flex items-center gap-4 w-full md:w-auto">
+                                <div class="${diffColor} p-3 rounded-2xl font-black flex items-center justify-center min-w-[50px] shadow-sm text-sm border border-black/5" style="${h.diff > 0 ? 'background:#F0FDF4; color:#16A34A;' : (h.diff < 0 ? 'background:#FFF0F0; color:#EF4444;' : 'background:#F6F1E9; color:#A05C00;')}">${diffSign}${h.diff}</div>
+                                <div>
+                                    <h4 class="font-black tracking-tight" style="color:#1C1A16;">${h.productName}</h4>
+                                    <p class="text-[10px] font-black uppercase tracking-widest" style="color:#A05C0066;">${h.sku} • <span style="color:#FF9A00;">Kasir: ${h.cashier}</span></p>
+                                    ${h.note && h.note !== '-' ? `<p class="text-[10px] mt-1 pl-2 border-l-2 italic" style="border-color:#FFD93D; color:#A05C00;">"${h.note}"</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex-1 flex justify-center text-xs font-black py-2 px-4 rounded-xl border border-dashed" style="background:#FFFDF8; border-color:rgba(255,154,0,0.2); color:#A05C00;">
+                                <span class="line-through opacity-40">${h.oldStock}</span> 
+                                <i data-lucide="arrow-right" class="w-3 h-3 mx-2 mt-0.5"></i> 
+                                <span style="color:#1C1A16;">${h.newStock}</span>
+                            </div>
+                            <div class="text-right w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 flex items-center justify-end gap-2 font-black text-[10px] uppercase" style="border-color:rgba(255,154,0,0.1); color:#A05C0066;">
+                                <i data-lucide="clock-3" class="w-3 h-3"></i> ${h.date}
+                            </div>
+                        `;
+                        tabContainer.appendChild(card);
+                    });
+                }
+            }
+
+            // Keep Modal support for backwards compatibility
+            if (listContainer) {
+                if (history.length === 0) {
+                    listContainer.innerHTML = '';
+                    if (emptyStateModal) emptyStateModal.classList.remove('hidden');
+                    return;
+                }
+                if (emptyStateModal) emptyStateModal.classList.add('hidden');
+                listContainer.innerHTML = '';
+                history.forEach(h => {
+                    const div = document.createElement('div');
+                    div.className = "p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-2";
+                    const diffColor = h.diff > 0 ? 'text-green-500 bg-green-50' : (h.diff < 0 ? 'text-red-500 bg-red-50' : 'text-gray-500 bg-gray-200');
+                    const diffSign = h.diff > 0 ? '+' : '';
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div><h4 class="font-bold text-sm text-slate-800">${h.productName}</h4><p class="text-[10px] text-gray-400 font-mono">${h.sku}</p></div>
+                            <span class="text-xs font-bold px-2 py-1 rounded-lg ${diffColor}">${diffSign}${h.diff}</span>
+                        </div>
+                        <div class="flex justify-between items-end mt-1 pt-2 border-t border-gray-100">
+                            <div class="flex-1">
+                                <p class="text-[10px] text-gray-400">Kasir: <span class="font-bold text-indigo-500 uppercase">${h.cashier}</span></p>
+                                <p class="text-[10px] text-gray-400">Perubahan: <span class="font-medium line-through mr-1">${h.oldStock}</span> &rarr; <span class="font-bold text-slate-700 ml-1">${h.newStock}</span></p>
+                                ${h.note && h.note !== '-' ? `<p class="text-[9px] text-pink-400 italic mt-1 font-medium italic">Ket: ${h.note}</p>` : ''}
+                            </div>
+                            <span class="text-[9px] font-bold text-gray-400 bg-white px-2 py-1 rounded-md border border-gray-100">${h.date}</span>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            }
+            lucide.createIcons();
+        }
+
+        function openStockHistoryModal() {
+            renderStockHistory();
+            const m = document.getElementById('stock-history-modal');
+            const c = document.getElementById('stock-history-modal-content');
+            m.classList.remove('hidden');
+            void m.offsetWidth;
+            m.classList.remove('opacity-0');
+            c.classList.remove('scale-95');
+        }
+
+        function closeStockHistoryModal() {
+            const m = document.getElementById('stock-history-modal');
+            const c = document.getElementById('stock-history-modal-content');
+            m.classList.add('opacity-0');
+            c.classList.add('scale-95');
+            setTimeout(() => m.classList.add('hidden'), 300);
+        }
+
+        function openDiscountModal(id, name, currentDiscount) {
+            const modal = document.getElementById('discount-modal');
+            const content = document.getElementById('discount-modal-content');
+
+            document.getElementById('disc-prod-id').value = id;
+            document.getElementById('disc-prod-name').innerText = name;
+            document.getElementById('disc-prod-value').value = currentDiscount || 0;
+
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeDiscountModal() {
+            const modal = document.getElementById('discount-modal');
+            const content = document.getElementById('discount-modal-content');
+
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function saveDiscount() {
+            const id = parseInt(document.getElementById('disc-prod-id').value);
+            const discount = parseInt(document.getElementById('disc-prod-value').value) || 0;
+
+            const product = state.products.find(p => p.id === id);
+            if (product) {
+                if (discount < 0 || discount > 100) {
+                    return showNotification('Diskon harus antara 0% - 100%!', 'error');
+                }
+                product.discount = discount;
+
+                // update cart if item is in cart
+                const itemInCart = state.cart.find(c => c.id === id);
+                if (itemInCart) {
+                    itemInCart.discount = discount;
+                }
+
+                showNotification('Diskon berhasil diterapkan!');
+                closeDiscountModal();
+                renderInventory();
+                renderPOS();
+                updateCartUI();
+                saveState();
+            }
+        }
+
+        function openAddMemberModal() {
+            const modal = document.getElementById('add-member-modal');
+            const content = document.getElementById('add-member-modal-content');
+
+            document.getElementById('new-mem-name').value = '';
+            document.getElementById('new-mem-phone').value = '';
+
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeAddMemberModal() {
+            const modal = document.getElementById('add-member-modal');
+            const content = document.getElementById('add-member-modal-content');
+
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function saveNewMember() {
+            const name = document.getElementById('new-mem-name').value;
+            const phone = document.getElementById('new-mem-phone').value;
+
+            if (!name || !phone) return showNotification('Nama dan Nomor HP wajib diisi!', 'error');
+
+            const newId = `MEM${String(state.members.length + 1).padStart(3, '0')}`;
+            const newMember = {
+                id: newId,
+                name: name,
+                phone: phone,
+                points: 0,
+                joinDate: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+            };
+
+            state.members.push(newMember);
+
+            const memSel = document.getElementById('members-list');
+            const opt = document.createElement('option');
+            opt.value = `${newMember.name} (${newMember.phone})`;
+            memSel.appendChild(opt);
+
+            showNotification('Member baru berhasil didaftarkan!');
+            closeAddMemberModal();
+            renderMembers();
+            saveState();
+        }
+
+        function formatIDR(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+        }
+
+        function loadState() {
+            let saved = localStorage.getItem('una_pos_state') || localStorage.getItem('lumiere_pos_state');
+            if (saved) {
+                state = JSON.parse(saved);
+                if (!state.cashiers) state.cashiers = [{ id: 'admin', name: 'Super Admin', pass: 'admin', joinDate: '15 Mei 2024' }];
+                if (!state.categories) state.categories = [...CATEGORIES];
+                if (!state.transactionAuditLog) state.transactionAuditLog = [];
+                return true;
+            }
+            return false;
+        }
+
+        function saveState() {
+            localStorage.setItem('una_pos_state', JSON.stringify(state));
+        }
+
+        function downloadCSV(csvString, filename) {
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function exportToExcel(type) {
+            let data = [];
+            let headers = [];
+            let filename = '';
+
+            if (type === 'inventory') {
+                filename = `UNA-Stok-${new Date().toISOString().split('T')[0]}.csv`;
+                headers = ['SKU', 'Nama Produk', 'Kategori', 'Harga', 'Stok', 'Status'];
+                data = state.products.map(p => [
+                    p.sku,
+                    p.name,
+                    p.category,
+                    p.price,
+                    p.stock,
+                    p.stock <= 0 ? 'Habis' : (p.stock < 10 ? 'Hampir Habis' : 'Tersedia')
+                ]);
+            } else if (type === 'members') {
+                filename = `UNA-Members-${new Date().toISOString().split('T')[0]}.csv`;
+                headers = ['ID Member', 'Nama', 'WhatsApp', 'Poin', 'Tanggal Bergabung'];
+                data = state.members.map(m => [m.id, m.name, m.phone, m.points, m.joinDate]);
+            } else if (type === 'stock-history') {
+                filename = `UNA-StockHist-${new Date().toISOString().split('T')[0]}.csv`;
+                headers = ['Tanggal', 'Produk', 'SKU', 'Stok Lama', 'Stok Baru', 'Selisih', 'Kasir', 'Keterangan'];
+                data = (state.stockHistory || []).map(h => [h.date, h.productName, h.sku, h.oldStock, h.newStock, h.diff, h.cashier, h.note || '-']);
+            } else if (type === 'transactions') {
+                filename = `UNA-Sales-${new Date().toISOString().split('T')[0]}.csv`;
+                headers = ['ID TRX', 'Tanggal', 'Pelanggan', 'Kasir', 'Items', 'Subtotal', 'Tax', 'Total'];
+                data = state.transactions.map(t => [
+                    t.id,
+                    t.date,
+                    t.customer,
+                    t.cashier,
+                    t.items.map(i => `${i.quantity}x ${i.name}`).join('; '),
+                    t.subtotal,
+                    t.tax,
+                    t.total
+                ]);
+            } else if (type === 'shifts') {
+                filename = `UNA-Shifts-${new Date().toISOString().split('T')[0]}.csv`;
+                headers = ['ID Shift', 'Tanggal/Waktu', 'Tipe', 'Petugas', 'Nominal', 'Keterangan'];
+                data = (state.shiftLogs || []).map(s => [s.id, s.date, s.type, s.cashier, s.amount, s.note]);
+            }
+
+            if (data.length === 0) return showNotification('Tidak ada data untuk diekspor!', 'error');
+
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(','))
+            ].join('\n');
+
+            downloadCSV(csvContent, filename);
+            showNotification(`Berhasil mengekspor ${data.length} baris data.`);
+        }
+
+        function renderTransactionLog() {
+            const listContainer = document.getElementById('trx-log-list');
+            const emptyState = document.getElementById('empty-trx-log');
+            if (!listContainer) return;
+
+            const logs = state.transactionAuditLog || [];
+            if (logs.length === 0) {
+                listContainer.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            listContainer.innerHTML = '';
+
+            logs.forEach(l => {
+                const div = document.createElement('div');
+                div.className = "p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1 shadow-sm";
+                const typeColor = l.type === 'HAPUS' ? 'text-red-600 bg-red-50' : 'text-blue-600 bg-blue-50';
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${typeColor}">${l.type.replace('_', ' ')}</span>
+                        <span class="text-[9px] font-bold text-gray-400">${l.date}</span>
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-800">${l.trxId}</h4>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Oleh: <span class="font-bold text-indigo-500 uppercase">${l.cashier}</span></p>
+                            ${l.note ? `<p class="text-[9px] text-gray-400 italic mt-1">${l.note}</p>` : ''}
+                        </div>
+                        <p class="font-black text-slate-700 text-xs">${formatIDR(l.total)}</p>
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function openTrxLogModal() {
+            renderTransactionLog();
+            const m = document.getElementById('trx-log-modal');
+            const c = document.getElementById('trx-log-modal-content');
+            m.classList.remove('hidden');
+            void m.offsetWidth;
+            m.classList.remove('opacity-0');
+            c.classList.remove('scale-95');
+        }
+
+        function closeTrxLogModal() {
+            const m = document.getElementById('trx-log-modal');
+            const c = document.getElementById('trx-log-modal-content');
+            m.classList.add('opacity-0');
+            c.classList.add('scale-95');
+            setTimeout(() => m.classList.add('hidden'), 300);
+        }
+
+        function renderShiftLogs() {
+            const container = document.getElementById('shift-history-list');
+            const emptyState = document.getElementById('empty-shift-history');
+            if (!container) return;
+
+            const logs = state.shiftLogs || [];
+
+            if (logs.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.innerHTML = '';
+
+            logs.forEach(log => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-[2rem] border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 animate-pop shadow-sm hover:shadow-md transition-all";
+                const typeColor = log.type === 'OPEN' ? 'text-indigo-500 bg-indigo-50' : 'text-rose-500 bg-rose-50';
+                const typeIcon = log.type === 'OPEN' ? 'unlock' : 'lock';
+                const typeText = log.type === 'OPEN' ? 'Buka Shift' : 'Tutup Shift';
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm" style="background:#FFF4DC; color:#A05C00;">
+                            <i data-lucide="${typeIcon}" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-black tracking-tight text-base" style="color:#1C1A16;">${typeText}</h4>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color:#A05C0066;">${log.cashier} • <span style="color:#FF9A00;">${log.date}</span></p>
+                        </div>
+                    </div>
+                    <div class="px-8 py-3 rounded-2xl border text-center min-w-[180px]" style="background:#FFFDF8; border-color:rgba(255,154,0,0.15);">
+                        <p class="text-[9px] font-black uppercase tracking-widest mb-1" style="color:#A05C0066;">Nominal</p>
+                        <p class="font-black text-lg" style="color:#1C1A16;">${formatIDR(log.amount)}</p>
+                    </div>
+                    <div class="flex-1 md:text-right w-full md:w-auto">
+                        <p class="text-xs font-bold px-4 py-2 rounded-xl border border-dashed inline-block" style="background:#F6F1E9; border-color:#FFD93D; color:#A05C00;">${log.note}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('main-sidebar');
+            const icon = document.getElementById('sidebar-toggle-icon');
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                icon.setAttribute('data-lucide', 'chevrons-right');
+            } else {
+                icon.setAttribute('data-lucide', 'menu');
+            }
+            lucide.createIcons();
+        }
+
+        // Initialize App
+        window.onload = () => {
+            if (!loadState()) {
+                initProducts();
+                saveState();
+            }
+
+            // Fill Categories
+            renderCategoryOptions();
+
+            // Fill Cashiers globally and update Select HTML components
+            renderCashiers();
+
+            // Default Tab
+            switchTab('dashboard');
+
+            // Fill Member Dropdown
+            const memSel = document.getElementById('members-list');
+            state.members.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = `${m.name} (${m.phone})`;
+                memSel.appendChild(opt);
+            });
+
+            // Default Tab
+            switchTab('dashboard');
+
+            // Event Listeners for Management
+            document.getElementById('inventory-search').addEventListener('input', renderInventory);
+            document.getElementById('inventory-category').addEventListener('input', renderInventory);
+            document.getElementById('inventory-status-filter').addEventListener('input', renderInventory);
+
+            // Save on unload
+            window.addEventListener('beforeunload', saveState);
+        };
+    </script>
+</body>
+
+</html>
