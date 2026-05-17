@@ -150,13 +150,16 @@
             const statusFilter = document.getElementById('inventory-status-filter');
             if (statusFilter) statusFilter.addEventListener('change', () => { state.inventoryPage = 1; renderInventory(); });
             
-            const priceInput = document.getElementById('new-prod-price');
-            if (priceInput) {
-                priceInput.addEventListener('input', (e) => {
-                    let value = e.target.value.replace(/\D/g, '');
-                    e.target.value = value ? new Intl.NumberFormat('id-ID').format(value) : '';
-                });
-            }
+            const priceInputs = ['new-prod-price', 'edit-prod-price'];
+            priceInputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', (e) => {
+                        let value = e.target.value.replace(/\D/g, '');
+                        e.target.value = value ? new Intl.NumberFormat('id-ID').format(value) : '';
+                    });
+                }
+            });
         });
     </script>
 </body>

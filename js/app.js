@@ -17,11 +17,14 @@ let state = {
     cashiers: [{ id: 'admin', name: 'Super Admin', pass: 'admin', joinDate: '15 Mei 2024' }],
     revenue: 0,
     logs: [],
+    currentShift: null,
+    shiftHistory: [],
     inventoryPage: 1, inventoryItemsPerPage: 10,
     categoryPage: 1, categoryItemsPerPage: 10,
     memberPage: 1, memberItemsPerPage: 10,
     stockHistoryPage: 1, stockHistoryItemsPerPage: 10,
-    transactionPage: 1, transactionItemsPerPage: 5
+    transactionPage: 1, transactionItemsPerPage: 5,
+    logPage: 1, logItemsPerPage: 15
 };
 
 const DEFAULT_STATE = JSON.parse(JSON.stringify(state));
@@ -548,7 +551,7 @@ function saveStock() {
     const note = document.getElementById('stock-note').value;
     const authId = document.getElementById('stock-auth-id').value;
     const authPass = document.getElementById('stock-auth-pass').value;
-    const cashier = state.cashiers.find(c => c.id === authId && c.pass === authPass);
+    const cashier = state.cashiers.find(c => (c.id === authId || c.email === authId) && c.pass === authPass);
     if (!cashier) return showNotification('Otorisasi Gagal!', 'error');
     const p = state.products.find(x => x.id === id);
     if (p && !isNaN(newStock)) {
@@ -578,7 +581,7 @@ function saveManualMutation() {
     const note = document.getElementById('mutation-note').value;
     const authId = document.getElementById('mutation-auth-id').value;
     const authPass = document.getElementById('mutation-auth-pass').value;
-    const cashier = state.cashiers.find(c => c.id === authId && c.pass === authPass);
+    const cashier = state.cashiers.find(c => (c.id === authId || c.email === authId) && c.pass === authPass);
     
     if (!cashier) return showNotification('Otorisasi gagal!', 'error');
     if (!prodInput || isNaN(qty) || qty === 0) return showNotification('Data tidak valid / Jumlah harus lebih dari 0!', 'error');
@@ -610,8 +613,15 @@ function saveManualMutation() {
 }
 
 function renderCategoryOptions() {
-    const sel = document.getElementById('inventory-category'); if (!sel) return;
-    sel.innerHTML = '<option value="Semua">Semua Kategori</option>' + state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    const filter = document.getElementById('inventory-category');
+    const addSel = document.getElementById('new-prod-category');
+    const editSel = document.getElementById('edit-prod-category');
+    
+    const options = state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+    
+    if (filter) filter.innerHTML = '<option value="Semua">Semua Kategori</option>' + options;
+    if (addSel) addSel.innerHTML = options;
+    if (editSel) editSel.innerHTML = options;
 }
 
 function renderUsers() {
@@ -704,3 +714,22 @@ function deleteUser(id) {
         saveState(); renderUsers(); showNotification('User telah dihapus');
     }
 }
+
+// Global Event Listeners
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const target = e.target;
+        // Check if input is inside a modal
+        const modal = target.closest('.fixed'); // Modals use .fixed inset-0
+        if (modal && !modal.classList.contains('hidden')) {
+            const primaryBtn = modal.querySelector('.btn-primary');
+            if (primaryBtn) {
+                e.preventDefault();
+                primaryBtn.click();
+            }
+        } else if (target.id === 'new-category-tab-input') {
+            e.preventDefault();
+            addCategoryFromTab();
+        }
+    }
+});

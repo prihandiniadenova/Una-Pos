@@ -48,15 +48,9 @@ function updateCartUI() {
 }
 
 function renderPOSCategories() {
-    const chipContainer = document.getElementById('pos-cat-chips');
-    const selectEl = document.getElementById('pos-cat-select');
-    if (!chipContainer || !selectEl) return;
+    const datalist = document.getElementById('pos-cat-list'); if (!datalist) return;
     const cats = state.categories.map(c => typeof c === 'string' ? c : c.name);
-    const top5 = cats.slice(0, 5);
-    chipContainer.innerHTML = `<button onclick="setPOSCategory('Semua')" class="px-4 py-2 rounded-xl text-[10px] font-black transition-all ${currentPOSCategory === 'Semua' ? 'bg-orange-500 text-white shadow-md' : 'bg-white hover:bg-orange-50 text-orange-900'}">Semua</button>` + 
-        top5.map(c => `<button onclick="setPOSCategory('${c}')" class="px-4 py-2 rounded-xl text-[10px] font-black transition-all ${currentPOSCategory === c ? 'bg-orange-500 text-white shadow-md' : 'bg-white hover:bg-orange-50 text-orange-900'}">${c}</button>`).join('');
-    selectEl.innerHTML = '<option value="Semua">Lainnya...</option>' + 
-        cats.map(c => `<option value="${c}" ${currentPOSCategory === c ? 'selected' : ''}>${c}</option>`).join('');
+    datalist.innerHTML = '<option value="Semua">' + cats.map(c => `<option value="${c}">`).join('');
 }
 
 function setPOSCategory(c) {
@@ -156,7 +150,115 @@ function processPayment(method) {
     if (document.getElementById('selected-member-badge')) document.getElementById('selected-member-badge').classList.add('hidden');
     if (document.getElementById('member-search-input')) document.getElementById('member-search-input').value = '';
     
-    addActivityLog('Transaksi POS', 'POS System', `Total: ${formatIDR(total)} (${method})`);
+    addActivityLog('Transaksi POS', state.currentShift?.cashierName || 'POS System', `Total: ${formatIDR(total)} (${method})`);
+    
+    // Update shift total if active
+    if (state.currentShift) {
+        state.currentShift.salesTotal += total;
+        state.currentShift.transactionCount++;
+    }
+
     saveState(); closePaymentModal(); updateCartUI(); renderPOS();
     showNotification(`Transaksi ${method} Berhasil!`);
 }
+
+function checkShiftStatus() {
+    const modal = document.getElementById('open-shift-modal');
+    const statusUi = document.getElementById('shift-status-ui');
+    const closeBtn = document.getElementById('btn-close-shift');
+    
+    if (!state.currentShift) {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            document.getElementById('open-shift-modal-content').classList.remove('scale-95');
+        }, 10);
+    } else {
+        statusUi.classList.remove('hidden');
+        closeBtn.classList.remove('hidden');
+        document.getElementById('shift-user-display').innerText = state.currentShift.cashierName;
+    }
+}
+
+function processOpenShift() {
+    const authId = document.getElementById('shift-open-id').value;
+    const authPass = document.getElementById('shift-open-pass').value;
+    const balanceRaw = document.getElementById('shift-open-balance').value.replace(/\D/g, '');
+    const balance = parseInt(balanceRaw) || 0;
+    
+    const cashier = state.cashiers.find(c => (c.id === authId || c.email === authId) && c.pass === authPass);
+    if (!cashier) return showNotification('ID Kasir atau Sandi salah!', 'error');
+    
+    state.currentShift = {
+        startTime: new Date().toLocaleString('id-ID'),
+        openingBalance: balance,
+        cashierName: cashier.name,
+        salesTotal: 0,
+        transactionCount: 0
+    };
+    
+    addActivityLog('Buka Shift', cashier.name, `Modal: ${formatIDR(balance)}`);
+    saveState();
+    
+    const modal = document.getElementById('open-shift-modal');
+    modal.classList.add('opacity-0');
+    document.getElementById('open-shift-modal-content').classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        checkShiftStatus();
+    }, 300);
+    
+    showNotification('Shift Berhasil Dibuka');
+}
+
+function openCloseShiftModal() {
+    if (!state.currentShift) return;
+    const modal = document.getElementById('close-shift-modal');
+    const content = document.getElementById('close-shift-modal-content');
+    
+    document.getElementById('cs-opening').innerText = formatIDR(state.currentShift.openingBalance);
+    document.getElementById('cs-sales').innerText = formatIDR(state.currentShift.salesTotal);
+    document.getElementById('cs-total').innerText = formatIDR(state.currentShift.openingBalance + state.currentShift.salesTotal);
+    
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+    }, 10);
+}
+
+function closeCloseShiftModal() {
+    const modal = document.getElementById('close-shift-modal');
+    const content = document.getElementById('close-shift-modal-content');
+    modal.classList.add('opacity-0');
+    content.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
+function processCloseShift() {
+    if (!state.currentShift) return;
+    
+    const closingSummary = {
+        ...state.currentShift,
+        endTime: new Date().toLocaleString('id-ID'),
+        finalBalance: state.currentShift.openingBalance + state.currentShift.salesTotal
+    };
+    
+    state.shiftHistory.unshift(closingSummary);
+    addActivityLog('Tutup Shift', state.currentShift.cashierName, `Final: ${formatIDR(closingSummary.finalBalance)}`);
+    
+    state.currentShift = null;
+    saveState();
+    location.reload(); // Refresh to show open shift again
+}
+
+// Attach formatters
+document.addEventListener('DOMContentLoaded', () => {
+    const obInput = document.getElementById('shift-open-balance');
+    if (obInput) {
+        obInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = value ? new Intl.NumberFormat('id-ID').format(value) : '';
+        });
+    }
+});

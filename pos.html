@@ -34,12 +34,17 @@
                             <input type="text" id="pos-search" placeholder="Cari Produk atau SKU..."
                                 class="una-input w-full pl-12 h-12 text-sm shadow-sm">
                         </div>
-                        <div class="flex items-center gap-3 overflow-hidden" id="pos-category-container">
-                            <div class="flex gap-1.5" id="pos-cat-chips"></div>
-                            <div class="h-6 w-px bg-gray-200 mx-1"></div>
-                            <select id="pos-cat-select" class="una-input h-10 text-xs px-4 pr-10 shadow-sm border-0 min-w-[140px]" onchange="setPOSCategory(this.value)">
-                                <option value="Semua">Lainnya...</option>
-                            </select>
+                        <div class="relative min-w-[180px]">
+                            <i data-lucide="filter" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="pos-cat-input" list="pos-cat-list" placeholder="Filter Kategori..." class="una-input w-full pl-9 h-11 text-xs shadow-sm bg-gray-50/50 border-0" onchange="setPOSCategory(this.value)">
+                            <datalist id="pos-cat-list"></datalist>
+                        </div>
+                        <div class="flex items-center gap-4 border-l border-gray-100 pl-4 ml-2">
+                            <div id="shift-status-ui" class="hidden text-right pr-2">
+                                <p class="text-[9px] font-black uppercase text-gray-400">Shift Aktif</p>
+                                <p id="shift-user-display" class="text-xs font-black text-orange-900"></p>
+                            </div>
+                            <button onclick="openCloseShiftModal()" id="btn-close-shift" class="hidden px-5 py-3 rounded-2xl bg-red-600 text-white font-black text-xs shadow-lg shadow-red-600/20 flex items-center gap-2 hover:bg-red-700 transition-all active:scale-95"><i data-lucide="power" class="w-4 h-4"></i> Tutup Kasir</button>
                         </div>
                     </div>
                 </div>
@@ -88,11 +93,70 @@
         </main>
     </div>
 
+    <!-- Modal Buka Shift (Buka Kasir) -->
+    <div id="open-shift-modal" class="fixed inset-0 z-[100] bg-black/60 hidden flex items-center justify-center backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl transform scale-95 transition-transform duration-300" id="open-shift-modal-content">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-orange-100 text-orange-500 rounded-[2rem] flex items-center justify-center mx-auto mb-4 shadow-inner"><i data-lucide="store" class="w-10 h-10"></i></div>
+                <h2 class="text-2xl font-black">Buka Shift Kasir</h2>
+                <p class="text-sm font-medium text-gray-400">Siapkan modal awal untuk transaksi hari ini</p>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-400 mb-2 ml-1">Otorisasi Kasir</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="shift-open-id" placeholder="ID Kasir" class="una-input w-full text-xs py-4 px-4">
+                        <input type="password" id="shift-open-pass" placeholder="Sandi" class="una-input w-full text-xs py-4 px-4">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-400 mb-2 ml-1">Uang Modal (Buka Kasir)</label>
+                    <input type="text" id="shift-open-balance" placeholder="Rp 0" class="una-input w-full py-5 px-6 font-black text-2xl text-orange-600">
+                </div>
+            </div>
+
+            <div class="mt-10 flex gap-4">
+                <a href="index.html" class="flex-1 py-4 font-black text-gray-400 text-center">Kembali</a>
+                <button onclick="processOpenShift()" class="btn-primary flex-[2] py-4 rounded-2xl font-black shadow-lg shadow-orange-500/20">Buka Kasir Sekarang</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tutup Shift -->
+    <div id="close-shift-modal" class="fixed inset-0 z-[100] bg-black/60 hidden flex items-center justify-center backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl transform scale-95 transition-transform duration-300" id="close-shift-modal-content">
+            <h2 class="text-2xl font-black mb-1">Tutup Kasir</h2>
+            <p class="text-xs text-gray-400 mb-8 italic">Ringkasan penjualan shift ini</p>
+            
+            <div class="space-y-4 mb-8">
+                <div class="p-5 bg-gray-50 rounded-3xl flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Modal Awal</span>
+                    <span class="font-black" id="cs-opening">Rp 0</span>
+                </div>
+                <div class="p-5 bg-orange-50 rounded-3xl flex justify-between items-center">
+                    <span class="text-xs font-bold text-orange-900 uppercase">Total Penjualan</span>
+                    <span class="font-black text-orange-600" id="cs-sales">Rp 0</span>
+                </div>
+                <div class="p-5 bg-green-50 border-2 border-green-500/10 rounded-3xl flex justify-between items-center">
+                    <span class="text-xs font-black text-green-700 uppercase">Total Uang Laci</span>
+                    <span class="text-xl font-black text-green-600" id="cs-total">Rp 0</span>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="closeCloseShiftModal()" class="flex-1 py-4 font-black text-gray-400">Batal</button>
+                <button onclick="processCloseShift()" class="bg-red-600 text-white flex-[2] py-4 rounded-2xl font-black shadow-lg shadow-red-600/20">Akhiri Shift & Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/app.js"></script>
     <script src="js/pos.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             loadState();
+            checkShiftStatus();
             injectSidebar('pos');
 
             // Fill member list
